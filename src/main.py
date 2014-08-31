@@ -103,7 +103,7 @@ class StratApp(App):
 
     def build(self):
 
-        self._map = loadMapFromFile('map01')
+        self._map = loadMapFromFile('map02')
         self._game = StratGame(self._map)
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)

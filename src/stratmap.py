@@ -93,8 +93,8 @@ def loadMapFromFile(fileName):
 			if line.endswith('\n'): line = line[:-1]
 			line = line.replace(' ', '')
 			content.append(line)
-	print(content)
 
+	content.reverse()
 	#clean empty lines at beggining
 	while not content[0]: content.pop(0)
 	# clean the empty lines at the end
