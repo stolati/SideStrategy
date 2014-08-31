@@ -20,6 +20,14 @@ class Pos(namedtuple('Pos', 'x y')):
         return Pos(self.x, self.y + y)
 
 
+class NamedColor:
+
+	def __init__(self, r, g, b):
+		self.r, self.g, self.b = r, g, b
+		self.rgb = (r, g, b)
+
+	def __call__(self):
+		return Color(self.r, self.g, self.b)
 
 class NamedColors:
     colors = {
@@ -33,10 +41,12 @@ class NamedColors:
 
         'black':(0,0,0),
         'white':(1,1,1),
+
+        'gray':(.5, .5, .5),
     }
 
     def __getattr__(self, name):
-        return lambda:Color(*NamedColors.colors[name])
+        return NamedColor(*NamedColors.colors[name])
 
 named_colors = NamedColors()
 

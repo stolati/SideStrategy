@@ -18,7 +18,7 @@ class GoEastStrategy(Strategy):
         maxX = self.parent.playmap.cellx
 
         pos = self.parent.pos + Pos(1, 0)
-        if pos.x > maxX: pos = Pos(0, pos.y) 
+        if pos.x >= maxX: pos = Pos(0, pos.y) 
         self.parent.pos = pos
 
 
@@ -40,15 +40,34 @@ class BounceStrategy(Strategy):
         maxX = self.parent.playmap.cellx
         maxY = self.parent.playmap.celly
 
-        curX = self.parent.pos.x + self.speed.x
-        if curX < 0 or curX > maxX:
+        oldPos = self.parent.pos
+        newPos = self.parent.pos + self.speed
+
+        if newPos.x < 0 or newPos.x >= maxX:
             self.speed = Pos(-self.speed.x, self.speed.y)
-            curX = self.parent.pos.x + self.speed.x
+            newPos = self.parent.pos + self.speed
 
-        curY = self.parent.pos.y + self.speed.y
-        if curY < 0 or curY > maxY:
+        if newPos.y < 0 or newPos.y >= maxY:
             self.speed = Pos(self.speed.x, -self.speed.y)
-            curY = self.parent.pos.y + self.speed.y
+            newPos = self.parent.pos + self.speed
 
-        self.parent.pos = Pos(curX, curY)
+        if self.parent.playmap._map.get(newPos).isFloor():
+            self.speed = Pos(-self.speed.x, -self.speed.y)
+            newPos = self.parent.pos + self.speed
+
+        self.parent.pos = newPos
+
+
+class PoopFloorStrategy(GoEastStrategy):
+    """Poop floor element and jump on the top floor"""
+
+    def action(self):
+        #put poop on the last place we have been on
+        self.parent.playmap._map.get(self.parent.pos).setAsFloor()
+
+        super(PoopFloorStrategy, self).action()
+
+        #try to jump on the top poop part
+        while self.parent.playmap._map.get(self.parent.pos).isFloor():
+            self.parent.pos = self.parent.pos + Pos(0, 1)
 
