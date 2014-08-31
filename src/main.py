@@ -12,73 +12,9 @@ from kivy.graphics import *
 
 from strategies import *
 from utils import *
+from stratmap import *
 
 mapSize = (40, 20)
-
-
-class MapElement:
-    def __init__(self):
-        self.drawElement = None
-        self.colorElement = None
-        self.type = None
-
-    def setAsFloor(self): self.type = 'floor'
-    def isFloor(self): return self.type == 'floor'
-
-
-class StratMap:
-
-    def __init__(self, size, playmap):
-        self.playmap = playmap
-        self.size = Pos(*size)
-        self._map = [[MapElement() for y in range(size[1])] for x in range(size[0])]
-        self.elements = []
-
-    def get(self, pos):
-        print('getting %s' % str(pos))
-        return self._map[pos.x][pos.y]
-
-    def set(self, pos, v):
-        self._map[pos.x][pos.y] = v
-
-    def drawMap(self):
-        for x in range(self.size.x):
-            for y in range(self.size.y):
-                self.drawCell(x, y)
-
-    def drawCell(self, x, y):
-        posX, posY, sizeX, sizeY = self.playmap.id2pos(x, y)
-        pos = (posX, posY)
-        size = (sizeX, sizeY)
-
-        elem = self._map[x][y]
-        #select color
-        color = named_colors.purple #default one
-        if elem.type is None:
-            color = named_colors.gray
-        elif elem.type == 'floor':
-            color = named_colors.black
-
-        if elem.drawElement is None:
-            elem.colorElement = color()
-            elem.drawElement = Rectangle(pos = pos, size = size)
-        else:
-            elem.colorElement.r = color.r
-            elem.colorElement.g = color.g
-            elem.colorElement.b = color.b
-            elem.drawElement.pos = pos
-            elem.drawElement.size = size
-
-
-    def update(self, dt):
-        for e in self.elements:
-            e.strategy.action()
-
-        #first draw the map so it will be first
-        self.drawMap()
-
-        for e in self.elements:
-            e.update(dt)
 
 
 class VisualElement:
@@ -106,11 +42,13 @@ class VisualElement:
 
 class StratGame(Widget):
 
-    def __init__(self, size, **kargs):
+    def __init__(self, stratMap, **kargs):
         super(StratGame, self).__init__(**kargs)
-        self.cellx, self.celly = size
+        self._map = stratMap
+        stratMap.playmap = self
+
+        self.cellx, self.celly = stratMap.size
         
-        self._map = StratMap(size, self)
         self._map.elements.append(VisualElement(self, color = named_colors.green))
         self._map.elements.append(VisualElement(self, strategy = RandomStrategy))
         self._map.elements.append(VisualElement(self, strategy = BounceStrategy,
@@ -164,7 +102,9 @@ class StratGame(Widget):
 class StratApp(App):
 
     def build(self):
-        self._game = StratGame(mapSize)
+
+        self._map = loadMapFromFile('map01')
+        self._game = StratGame(self._map)
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)
         return self._game
