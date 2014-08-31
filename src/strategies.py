@@ -15,14 +15,19 @@ class Strategy:
 class GoEastStrategy(Strategy):
 
     def action(self):
+        maxX = self.parent.playmap.cellx
+
         pos = self.parent.pos + Pos(1, 0)
-        if pos.x > 20: pos = Pos(0, pos.y) 
+        if pos.x > maxX: pos = Pos(0, pos.y) 
         self.parent.pos = pos
 
 
 class RandomStrategy(Strategy):
 
     def action(self):
-        self.parent.pos = Pos(randint(0, 20), randint(0, 20))
+        maxX = self.parent.playmap.cellx
+        maxY = self.parent.playmap.celly
+
+        self.parent.pos = Pos(randint(0, maxX), randint(0, maxY))
 
 
