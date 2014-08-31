@@ -13,7 +13,7 @@ from kivy.graphics import *
 from strategies import *
 from utils import *
 
-mapSize = (20, 20)
+mapSize = (40, 20)
 
 
 class StratMap:
@@ -66,6 +66,7 @@ class StratGame(Widget):
         self._map = StratMap(size)
         self._map.elements.append(VisualElement(self, color = named_colors.green))
         self._map.elements.append(VisualElement(self, strategy = RandomStrategy))
+        self._map.elements.append(VisualElement(self, strategy = BounceStrategy, color = named_colors.yellow))
         
         #Clock.schedule_once(lambda dt: self.drawCells(), 1.0/60.0)
 
