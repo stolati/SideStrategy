@@ -10,68 +10,10 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.graphics import *
 
-from random import random, randint
-from collections import namedtuple
-
-class NamedColors:
-    colors = {
-        'red':(1,0,0),
-        'green':(0,1,0),
-        'blue':(0,0,1),
-
-        'cyan':(0,1,1),
-        'purple':(1,0,1),
-        'yellow':(1,1,0),
-
-        'black':(0,0,0),
-        'white':(1,1,1),
-    }
-
-    def __getattr__(self, name):
-        return lambda:Color(*NamedColors.colors[name])
-
-named_colors = NamedColors()
+from strategies import *
+from utils import *
 
 mapSize = (20, 20)
-
-
-class Pos(namedtuple('Pos', 'x y')):
-    """Immutable position as named tuple"""
-
-    def __add__(self, other):
-        return Pos(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Pos(self.x - other.x, self.y - other.y)
-
-    def addX(self, x):
-        return Pos(self.x + x, self.y)
-
-    def addY(self, y):
-        return Pos(self.x, self.y + y)
-
-
-
-class Strategy:
-    """Strategy interface class"""
-    def __init__(self, parent):
-        self.parent = parent
-
-    def action(self): return NotImplemented()
-
-
-class GoEastStrategy(Strategy):
-
-    def action(self):
-        pos = self.parent.pos + Pos(1, 0)
-        if pos.x > 20: pos = Pos(0, pos.y) 
-        self.parent.pos = pos
-
-
-class RandomStrategy(Strategy):
-
-    def action(self):
-        self.parent.pos = Pos(randint(0, 20), randint(0, 20))
 
 
 class StratMap:
