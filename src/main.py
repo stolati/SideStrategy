@@ -32,11 +32,11 @@ class StratGame(Widget):
         pos2, elem2 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 2)[0]
 
 
-        visualGreen = ColorVisual.buildForElement(color = named_colors.green)
-        e1 = Element(self, visual = visualGreen, strategy = Strategy, startPos = pos1)
+        visualGreen = ColorVisual(color = named_colors.green)
+        e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(), startPos = pos1)
 
-        visualRed = ColorVisual.buildForElement(color = named_colors.red)
-        e2 = Element(self, visual = visualRed, strategy = Strategy, startPos = pos2)
+        visualRed = ColorVisual(color = named_colors.red)
+        e2 = Element(self, visual = visualRed, strategy = MotherShipStrategy(), startPos = pos2)
 
         self._map.elements.append(e1)
         self._map.elements.append(e2)

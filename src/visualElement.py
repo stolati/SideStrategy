@@ -13,12 +13,8 @@ from stratmap import *
 from visualElement import *
 
 class Visual:
-    def __init__(self, element = None):
-        self.element = element
-
-    @classmethod
-    def buildForElement(klass, **kargs):
-        return lambda e:klass(element = e, **kargs)
+    def __init__(self, parent = None):
+        self.parent = parent
 
     def update(self, dt): raise NotImplemented()
 
@@ -32,7 +28,7 @@ class ColorVisual(Visual):
 
     def update(self, dt):
 
-        posX, posY, sizeX, sizeY = self.element.playmap.id2pos(*self.element.pos)
+        posX, posY, sizeX, sizeY = self.parent.playmap.id2pos(*self.parent.pos)
         pos = (posX, posY)
         size = (sizeX, sizeY)
 
@@ -46,13 +42,13 @@ class ColorVisual(Visual):
 
 class Element:
 
-    def __init__(self, playmap, startPos = Pos(0, 0),
-            visual = ColorVisual.buildForElement(),
-            strategy = PoopFloorStrategy):
+    def __init__(self, playmap, startPos, visual, strategy):
 
         self.playmap, self.pos = playmap, startPos
-        self.strategy = strategy(self)
-        self.visual = visual(self)
+        self.strategy = strategy
+        self.visual = visual
+        self.strategy.parent = self
+        self.visual.parent = self
 
-    def update(self, dt):
-        self.visual.update(dt)
+
+

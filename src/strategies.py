@@ -1,15 +1,49 @@
 
-from random import random, randint
+from random import random, randint, choice
 
 from utils import *
+from visualElement import *
 
 
 class Strategy:
     """Strategy interface class"""
-    def __init__(self, parent):
+    def __init__(self, parent = None):
         self.parent = parent
 
-    def action(self): pass #by default do nothing
+    def action(self):
+        pass #by default do nothing
+        print('action ?!')
+
+    def advanceOneStepAndBounce(self, way, pos):
+        """advance one step of x and return the x value
+        which can change if the element bounce of the wall"""
+
+        maxX = self.parent.playmap.cellx
+        pos = self.parent.pos + Pos(way, 0)
+        if pos.x >= maxX or pos.x < 0:
+            way = -way
+            pos = self.parent.pos + Pos(way, 0)
+
+        return way, pos
+
+    def putOnFloor(self, pos):
+
+        #try now to find the floor from that
+        m = self.parent.playmap._map
+        curElem = m.get(pos)
+        if curElem.isFloor():
+            #we are on floor
+            while m.get(pos).isFloor():
+                pos = pos + Pos(0, 1)
+
+        else:
+            #we are not on floor
+            while not m.get(pos).isFloor():
+                pos = pos + Pos(0, -1)
+            pos = pos + Pos(0, 1) #return to the last no-floor element
+
+        return pos
+
 
 
 class GoEastStrategy(Strategy):
@@ -74,9 +108,41 @@ class PoopFloorStrategy(GoEastStrategy):
 
 class MotherShipStrategy(Strategy):
 
+    def __init__(self, *args, **kargs):
+        super(MotherShipStrategy, self).__init__(*args, **kargs)
+        self.count = 0
+
+
     def action(self):
-        pass
+        self.count += 1
+        if self.count % 15 != 0: return
+        #each 15 actions, pop a sibling
+        playmap = self.parent.playmap
+        visualMine = ColorVisual(color = self.parent.visual.color)        
+        way = choice(['left', 'right'])
+        e = Element(playmap, visual = visualMine, strategy = RunOnFloorStrategy('left'), startPos = self.parent.pos)
 
-        #create an element in the map
+        playmap._map.elements.append(e)
 
+
+class RunOnFloorStrategy(Strategy):
+
+    def __init__(self, way, *args, **kargs):
+        super(RunOnFloorStrategy, self).__init__(*args, **kargs)
+        """way can be 'left' or 'right'"""
+        self.way = way
+        if way == 'left': self.way = -1
+        if way == 'right': self.way = 1
+
+        self.count = 0
+
+    def action(self):
+        self.count += 1
+        if self.count % 3 != 0: return
+
+        self.way, pos = self.advanceOneStepAndBounce(self.way, self.parent.pos)
+
+        pos = self.putOnFloor(pos)
+
+        self.parent.pos = pos
 

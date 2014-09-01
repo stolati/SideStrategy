@@ -82,7 +82,7 @@ class StratMap:
         self.drawMap()
 
         for e in self.elements:
-            e.update(dt)
+            e.visual.update(dt)
 
 
     def findElement(self, trueFunction):
