@@ -33,7 +33,7 @@ class StratGame(Widget):
 
 
         visualGreen = ColorVisual(color = named_colors.green)
-        e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(), startPos = pos1)
+        e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(speed = 3), startPos = pos1)
 
         visualRed = ColorVisual(color = named_colors.red)
         e2 = Element(self, visual = visualRed, strategy = MotherShipStrategy(), startPos = pos2)

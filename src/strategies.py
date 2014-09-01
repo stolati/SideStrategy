@@ -45,7 +45,6 @@ class Strategy:
         return pos
 
 
-
 class GoEastStrategy(Strategy):
 
     def action(self):
@@ -108,19 +107,20 @@ class PoopFloorStrategy(GoEastStrategy):
 
 class MotherShipStrategy(Strategy):
 
-    def __init__(self, *args, **kargs):
+    def __init__(self, speed = 15, *args, **kargs):
         super(MotherShipStrategy, self).__init__(*args, **kargs)
         self.count = 0
-
+        self.life = 10
+        self.speed = speed
 
     def action(self):
         self.count += 1
-        if self.count % 15 != 0: return
+        if self.count % self.speed != 0: return
         #each 15 actions, pop a sibling
         playmap = self.parent.playmap
         visualMine = ColorVisual(color = self.parent.visual.color)        
         way = choice(['left', 'right'])
-        e = Element(playmap, visual = visualMine, strategy = RunOnFloorStrategy('left'), startPos = self.parent.pos)
+        e = Element(playmap, visual = visualMine, strategy = RunOnFloorStrategy(way), startPos = self.parent.pos)
 
         playmap._map.elements.append(e)
 
@@ -138,11 +138,38 @@ class RunOnFloorStrategy(Strategy):
 
     def action(self):
         self.count += 1
-        if self.count % 3 != 0: return
+        if self.count % 2 != 0: return
 
         self.way, pos = self.advanceOneStepAndBounce(self.way, self.parent.pos)
-
         pos = self.putOnFloor(pos)
 
         self.parent.pos = pos
+
+        #hack for now, get current color
+        selfCol = self.parent.visual.color
+        for e in self.parent.playmap._map.findOnPos(pos):
+            if e is self.parent: continue #TODO do a helper for this loop
+            if e.visual.color == selfCol: continue #TODO replace that by side
+
+            # we are encounting a enemy, getting the stategy to know what it is
+            # TODO instead do a life count
+            curStrat = e.strategy.__class__
+            if curStrat == RunOnFloorStrategy:
+                # both are destroyed
+                self.parent.deleteMe()
+                e.deleteMe()
+
+            if curStrat == MotherShipStrategy:
+                self.parent.deleteMe()
+
+                e.strategy.life -= 1
+                if e.strategy.life == 0:
+                    e.deleteMe()
+
+                # todo do a stuff to the mothership
+
+            print(curStrat)
+
+        #if encounter another element
+        #if encounter the mothership
 

@@ -18,6 +18,8 @@ class Visual:
 
     def update(self, dt): raise NotImplemented()
 
+    def remove(self): raise NotImplemented()
+
 
 class ColorVisual(Visual):
 
@@ -39,6 +41,9 @@ class ColorVisual(Visual):
             self._graphics.pos = pos
             self._graphics.size = size
 
+    def remove(self):
+        self.parent.playmap.canvas.remove(self._graphics)
+
 
 class Element:
 
@@ -49,6 +54,15 @@ class Element:
         self.visual = visual
         self.strategy.parent = self
         self.visual.parent = self
+
+    def deleteMe(self):
+        #deleting from the map
+        try: #TODO do a better handling of deleting elements
+            self.playmap._map.elements.remove(self)
+            self.visual.remove()
+        except:
+            pass 
+
 
 
 

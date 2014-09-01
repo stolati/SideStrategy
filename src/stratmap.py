@@ -56,11 +56,11 @@ class StratMap:
         if elem.type is None:
             color = named_colors.gray
         elif elem.isAir():
-        	color = named_colors.white
+            color = named_colors.white
         elif elem.isFloor():
             color = named_colors.black
         elif elem.isStart():
-        	color = named_colors.blue
+            color = named_colors.blue
         #TODO put an exception when type not known instead of default one
 
         if elem.drawElement is None:
@@ -86,65 +86,68 @@ class StratMap:
 
 
     def findElement(self, trueFunction):
-    	"""Find an element in the map to which the function return true
-    		return the (pos, element) for valid matches"""
-    	res = []
-    	for x in range(self.size.x):
-    		for y in range(self.size.y):
-    			curPos = Pos(x, y)
-    			elem = self.get(curPos)
-    			if trueFunction(self.get(curPos)):
-    				res.append((curPos, elem))
-    	return res
+        """Find an element in the map to which the function return true
+            return the (pos, element) for valid matches"""
+        res = []
+        for x in range(self.size.x):
+            for y in range(self.size.y):
+                curPos = Pos(x, y)
+                elem = self.get(curPos)
+                if trueFunction(self.get(curPos)):
+                    res.append((curPos, elem))
+        return res
 
+    def findOnPos(self, pos):
+        for e in self.elements:
+            if e.pos == pos: yield e
 
 
 def loadMapFromFile(fileName):
 
-	def loadCharToElement(element, char):
-		if char == '.':
-			element.setAsAir()
-		elif char == '0':
-			element.setAsFloor()
-		elif char in '123456789':
-			element.setAsStart(int(char))
-		else:
-			raise NotImplemented("%s not known" % char)
+    def loadCharToElement(element, char):
+        if char == '.':
+            element.setAsAir()
+        elif char == '0':
+            element.setAsFloor()
+        elif char in '123456789':
+            element.setAsStart(int(char))
+        else:
+            raise NotImplemented("%s not known" % char)
 
-	fileName = '%s.map' % fileName
-	content = []
-	with open(resource_find(fileName)) as mapFile:
-		for line in mapFile:
-			if line.endswith('\n'): line = line[:-1]
-			line = line.replace(' ', '')
-			content.append(line)
+    fileName = '%s.map' % fileName
+    content = []
+    with open(resource_find(fileName)) as mapFile:
+        for line in mapFile:
+            if line.endswith('\n'): line = line[:-1]
+            line = line.replace(' ', '')
+            content.append(line)
 
-	content.reverse()
-	#clean empty lines at beggining
-	while not content[0]: content.pop(0)
-	# clean the empty lines at the end
-	while not content[-1]: content.pop()
+    content.reverse()
+    #clean empty lines at beggining
+    while not content[0]: content.pop(0)
+    # clean the empty lines at the end
+    while not content[-1]: content.pop()
 
-	sizeY = len(content)
-	sizeX = 0
-	for line in content:
-		sizeX = max(sizeX, len(line))
+    sizeY = len(content)
+    sizeX = 0
+    for line in content:
+        sizeX = max(sizeX, len(line))
 
-	size = Pos(sizeX, sizeY)
+    size = Pos(sizeX, sizeY)
 
-	res = StratMap(size)
+    res = StratMap(size)
 
-	for y, line in enumerate(content):
-		for x, char in enumerate(line):
-			loadCharToElement(res.get(Pos(x, y)), char)
+    for y, line in enumerate(content):
+        for x, char in enumerate(line):
+            loadCharToElement(res.get(Pos(x, y)), char)
 
-	return res
+    return res
 
 
 def addMapDirIntoRessources():
-	map_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'map')
-	print(map_dir)
-	resource_add_path(map_dir)
+    map_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'map')
+    print(map_dir)
+    resource_add_path(map_dir)
 
 addMapDirIntoRessources()
 
