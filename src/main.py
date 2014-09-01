@@ -15,7 +15,6 @@ from utils import *
 from stratmap import *
 from visualElement import *
 
-mapSize = (40, 20)
 
 
 
@@ -28,14 +27,28 @@ class StratGame(Widget):
         stratMap.playmap = self
 
         self.cellx, self.celly = stratMap.size
-        
-        visualGreen = ColorVisual.buildForElement(color = named_colors.green)
-        visualYellow = ColorVisual.buildForElement(color = named_colors.yellow)
 
-        self._map.elements.append(Element(self, visual = visualGreen))
-        self._map.elements.append(Element(self, strategy = RandomStrategy))
-        self._map.elements.append(Element(self, strategy = BounceStrategy,
-            visual = visualYellow, startPos = Pos(2, 2)))
+        pos1, elem1 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 1)[0]
+        pos2, elem2 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 2)[0]
+
+
+        visualGreen = ColorVisual.buildForElement(color = named_colors.green)
+        e1 = Element(self, visual = visualGreen, strategy = Strategy, startPos = pos1)
+
+        visualRed = ColorVisual.buildForElement(color = named_colors.red)
+        e2 = Element(self, visual = visualRed, strategy = Strategy, startPos = pos2)
+
+        self._map.elements.append(e1)
+        self._map.elements.append(e2)
+
+        
+        #visualGreen = ColorVisual.buildForElement(color = named_colors.green)
+        #visualYellow = ColorVisual.buildForElement(color = named_colors.yellow)
+
+        #self._map.elements.append(Element(self, visual = visualGreen))
+        #self._map.elements.append(Element(self, strategy = RandomStrategy))
+        #self._map.elements.append(Element(self, strategy = BounceStrategy,
+        #    visual = visualYellow, startPos = Pos(2, 2)))
         
         #Clock.schedule_once(lambda dt: self.drawCells(), 1.0/60.0)
 

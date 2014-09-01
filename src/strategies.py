@@ -9,7 +9,7 @@ class Strategy:
     def __init__(self, parent):
         self.parent = parent
 
-    def action(self): return NotImplemented()
+    def action(self): pass #by default do nothing
 
 
 class GoEastStrategy(Strategy):
@@ -70,4 +70,13 @@ class PoopFloorStrategy(GoEastStrategy):
         #try to jump on the top poop part
         while self.parent.playmap._map.get(self.parent.pos).isFloor():
             self.parent.pos = self.parent.pos + Pos(0, 1)
+
+
+class MotherShipStrategy(Strategy):
+
+    def action(self):
+        pass
+
+        #create an element in the map
+
 

@@ -13,6 +13,7 @@ class MapElement:
         self.drawElement = None
         self.colorElement = None
         self.type = None
+        self.metadata = None #data added to the element, useful from the type
 
     def setAsFloor(self): self.type = 'floor'
     def isFloor(self): return self.type == 'floor'
@@ -20,12 +21,14 @@ class MapElement:
     def setAsAir(self): self.type = 'air'
     def isAir(self): return self.type == 'air'
 
-
+    def setAsStart(self, num): self.type, self.metadata = 'start', num
+    def isStart(self): return self.type == 'start'
+    def getStartNum(self): return self.metadata
 
 
 class StratMap:
 
-    def __init__(self, size, playmap = None):
+    def __init__(self, size = (40, 20), playmap = None):
         self.playmap = playmap
         self.size = Pos(*size)
         self._map = [[MapElement() for y in range(size[1])] for x in range(size[0])]
@@ -52,8 +55,13 @@ class StratMap:
         color = named_colors.purple #default one
         if elem.type is None:
             color = named_colors.gray
-        elif elem.type == 'floor':
+        elif elem.isAir():
+        	color = named_colors.white
+        elif elem.isFloor():
             color = named_colors.black
+        elif elem.isStart():
+        	color = named_colors.blue
+        #TODO put an exception when type not known instead of default one
 
         if elem.drawElement is None:
             elem.colorElement = color()
@@ -77,6 +85,19 @@ class StratMap:
             e.update(dt)
 
 
+    def findElement(self, trueFunction):
+    	"""Find an element in the map to which the function return true
+    		return the (pos, element) for valid matches"""
+    	res = []
+    	for x in range(self.size.x):
+    		for y in range(self.size.y):
+    			curPos = Pos(x, y)
+    			elem = self.get(curPos)
+    			if trueFunction(self.get(curPos)):
+    				res.append((curPos, elem))
+    	return res
+
+
 
 def loadMapFromFile(fileName):
 
@@ -85,6 +106,8 @@ def loadMapFromFile(fileName):
 			element.setAsAir()
 		elif char == '0':
 			element.setAsFloor()
+		elif char in '123456789':
+			element.setAsStart(int(char))
 		else:
 			raise NotImplemented("%s not known" % char)
 
