@@ -13,31 +13,11 @@ from kivy.graphics import *
 from strategies import *
 from utils import *
 from stratmap import *
+from visualElement import *
 
 mapSize = (40, 20)
 
 
-class VisualElement:
-
-    def __init__(self, playmap, startPos = Pos(0, 0),
-            color = named_colors.white, strategy = PoopFloorStrategy):
-        self.playmap, self.pos, self.color = playmap, startPos, color
-        self.strategy = strategy(self)
-
-        self._graphics = None
-
-    def update(self, dt):
-
-        posX, posY, sizeX, sizeY = self.playmap.id2pos(*self.pos)
-        pos = (posX, posY)
-        size = (sizeX, sizeY)
-
-        if self._graphics is None:
-            self.color()
-            self._graphics = Rectangle(pos = pos, size = size)
-        else :
-            self._graphics.pos = pos
-            self._graphics.size = size
 
 
 class StratGame(Widget):
@@ -49,10 +29,13 @@ class StratGame(Widget):
 
         self.cellx, self.celly = stratMap.size
         
-        self._map.elements.append(VisualElement(self, color = named_colors.green))
-        self._map.elements.append(VisualElement(self, strategy = RandomStrategy))
-        self._map.elements.append(VisualElement(self, strategy = BounceStrategy,
-            color = named_colors.yellow, startPos = Pos(2, 2)))
+        visualGreen = ColorVisual.buildForElement(color = named_colors.green)
+        visualYellow = ColorVisual.buildForElement(color = named_colors.yellow)
+
+        self._map.elements.append(Element(self, visual = visualGreen))
+        self._map.elements.append(Element(self, strategy = RandomStrategy))
+        self._map.elements.append(Element(self, strategy = BounceStrategy,
+            visual = visualYellow, startPos = Pos(2, 2)))
         
         #Clock.schedule_once(lambda dt: self.drawCells(), 1.0/60.0)
 
@@ -103,7 +86,7 @@ class StratApp(App):
 
     def build(self):
 
-        self._map = loadMapFromFile('map02')
+        self._map = loadMapFromFile('map03')
         self._game = StratGame(self._map)
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)

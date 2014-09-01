@@ -76,16 +76,18 @@ class StratMap:
         for e in self.elements:
             e.update(dt)
 
-def loadCharToElement(element, char):
-	if char == '.':
-		element.setAsAir()
-	elif char == '0':
-		element.setAsFloor()
-	else:
-		raise NotImplemented("%s not known" % char)
 
 
 def loadMapFromFile(fileName):
+
+	def loadCharToElement(element, char):
+		if char == '.':
+			element.setAsAir()
+		elif char == '0':
+			element.setAsFloor()
+		else:
+			raise NotImplemented("%s not known" % char)
+
 	fileName = '%s.map' % fileName
 	content = []
 	with open(resource_find(fileName)) as mapFile:
