@@ -28,6 +28,7 @@ class ColorVisual(Visual):
         self._graphics = None
         self.color = color
 
+
     def update(self, dt):
 
         posX, posY, sizeX, sizeY = self.parent.playmap.id2pos(*self.parent.pos)
@@ -42,7 +43,9 @@ class ColorVisual(Visual):
             self._graphics.size = size
 
     def remove(self):
-        self.parent.playmap.canvas.remove(self._graphics)
+        if self._graphics != None:
+            self.parent.playmap.canvas.remove(self._graphics)
+            self._graphics = None
 
 
 class Element:

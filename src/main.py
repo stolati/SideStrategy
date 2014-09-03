@@ -1,6 +1,16 @@
 #!/usr/bin/kivy
 import kivy
-# sartup with http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
+
+# http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
+
+# Things to do after :
+# - bigger than 1x1 elements (so we can go to )
+# - groups of elements in the same clan
+# - an interface with mouse to pop elements
+# - click to ask an element to go somewhere
+
+
+
 
 from kivy.app import App
 from kivy.uix.label import Label
@@ -76,7 +86,7 @@ class StratGame(Widget):
                     Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def update(self, dt):
-        print(len(self.canvas.get_group(None)))
+        # (len(self.canvas.get_group(None)))
         with self.canvas:
             self._map.update(dt)
 
@@ -99,10 +109,13 @@ class StratApp(App):
 
     def build(self):
 
-        self._map = loadMapFromFile('map03')
+        #self._map = loadMapFromFile('map03')
+
+        self._map = generateMap()
+
         self._game = StratGame(self._map)
-        #Clock.schedule_interval(self._game.update, 1.0/60.0)
-        Clock.schedule_interval(self._game.update, 1.0/15.0)
+        Clock.schedule_interval(self._game.update, 1.0/60.0)
+        #Clock.schedule_interval(self._game.update, 1.0/15.0)
         return self._game
 
 

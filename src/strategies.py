@@ -166,10 +166,6 @@ class RunOnFloorStrategy(Strategy):
                 if e.strategy.life == 0:
                     e.deleteMe()
 
-                # todo do a stuff to the mothership
-
-            print(curStrat)
-
         #if encounter another element
         #if encounter the mothership
 

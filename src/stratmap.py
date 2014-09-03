@@ -6,6 +6,9 @@ from strategies import *
 from utils import *
 from functools import reduce
 
+import random
+import math
+
 import os, os.path, sys
 
 class MapElement:
@@ -15,15 +18,21 @@ class MapElement:
         self.type = None
         self.metadata = None #data added to the element, useful from the type
 
-    def setAsFloor(self): self.type = 'floor'
     def isFloor(self): return self.type == 'floor'
+    def setAsFloor(self):
+        self.type = 'floor'
+        return self
 
-    def setAsAir(self): self.type = 'air'
     def isAir(self): return self.type == 'air'
+    def setAsAir(self):
+        self.type = 'air'
+        return self
 
-    def setAsStart(self, num): self.type, self.metadata = 'start', num
     def isStart(self): return self.type == 'start'
     def getStartNum(self): return self.metadata
+    def setAsStart(self, num):
+        self.type, self.metadata = 'start', num
+        return self
 
 
 class StratMap:
@@ -151,3 +160,62 @@ def addMapDirIntoRessources():
 
 addMapDirIntoRessources()
 
+
+def generateMap(size = Pos(100, 100)):
+
+
+    plansize, rangeelevation_percent = 5, 15 # determining the generation
+    rangeelevation = (rangeelevation_percent * size.y) // 100
+
+    randTenPercent = lambda:random.randrange(-rangeelevation, rangeelevation)
+
+    def getNextCurrent(current):
+        new_current = current + randTenPercent()
+        if new_current >= size.y: # we don't want to go too up
+            new_current = current - (2 * abs(randTenPercent()))
+        elif new_current < 0 : # we don't want to go too down
+            new_current = current + (2 * abs(randTenPercent()))
+        if new_current > size.y or new_current < 0: # if the previous code failed
+            new_current = (size.y // 2)
+        return new_current
+
+    elevations = []
+
+
+    current = (size.y // 2) + randTenPercent() # begin the elevalion at the middle (sort of)
+    next_current = getNextCurrent(current)
+    stepfromcurrent = 0
+    for i in range(size.x):
+        if stepfromcurrent == plansize:
+            current, next_current = next_current, getNextCurrent(next_current)
+            stepfromcurrent = 0
+            cur_ele = current
+        else:
+            report = stepfromcurrent / plansize 
+            cur_ele = (next_current - current) * report + current
+        stepfromcurrent += 1
+
+        elevations.append(cur_ele)
+
+    map_res = StratMap(size)
+
+    start1posx = size.x // 10 # the green is at 10% start of map
+    start1pos = Pos(start1posx, abs(elevations[start1posx]) + 1)
+
+    start2posx = size.x - (size.x // 10) # the red is at 10% end of map
+    start2pos = Pos(start2posx, abs(elevations[start2posx]) + 1)
+
+    # Fill the map
+    for x, elevation in enumerate(elevations):
+        for y in range(size.y):
+            cur_pos = Pos(x, y)
+            if cur_pos == start1pos:
+                map_res.get(cur_pos).setAsStart(1)
+            elif cur_pos == start2pos:
+                map_res.get(cur_pos).setAsStart(2)
+            elif y > elevation:
+                map_res.get(cur_pos).setAsAir()
+            else:
+                map_res.get(cur_pos).setAsFloor()
+
+    return map_res
