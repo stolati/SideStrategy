@@ -145,8 +145,8 @@ class StratApp(App):
         self._map = generateMap()
 
         self._game = StratGame(self._map)
-        Clock.schedule_interval(self._game.update, 1.0/60.0)
-        #Clock.schedule_interval(self._game.update, 1.0/15.0)
+        #Clock.schedule_interval(self._game.update, 1.0/60.0)
+        Clock.schedule_interval(self._game.update, 1.0/15.0)
         return self._game
 
 

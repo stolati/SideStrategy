@@ -1,14 +1,24 @@
 
 from random import random, randint, choice
+from pprint import pprint
 
 from utils import *
 from visualElement import *
+
 
 
 class Strategy:
     """Strategy interface class"""
     def __init__(self, parent = None):
         self.parent = parent
+        self.nextStrat = None #when this strategy is finished (if the strategy can be finished) 
+
+    def setNextStrategy(self, strategy):
+        self.nextStrat = strategy
+
+    def _strategyFinished(self):
+        assert self.nextStrat is not None
+        self.parent.strategy = self.nextStrat
 
     def action(self):
         pass #by default do nothing
@@ -43,6 +53,49 @@ class Strategy:
             pos = pos + Pos(0, 1) #return to the last no-floor element
 
         return pos
+
+    def shortestPath(self, fctWeight, posTo, posFrom = None):
+        if posFrom is None: posFrom = self.parent.pos
+        if posFrom == posTo: return []
+        m = self.parent.playmap._map
+
+        foundPaths = {posFrom : (0, [None])}
+        curPos, nextPos = [posFrom], []
+
+        while len(curPos): #continue until they are case to process
+
+            for pos in curPos:
+                curWeight = foundPaths[pos][0]
+                for around in m.getAround(pos):
+                    tmpWeight = fctWeight(around, m.get(around))
+                    if tmpWeight is None: continue
+                    weight = tmpWeight + curWeight
+                    #replace case
+                    if around not in foundPaths:
+                        foundPaths[around] = (weight, [pos])
+                        nextPos.append(around)
+                    else:
+                        oldWeight, oldPaths = foundPaths[around]
+                        if oldWeight == weight:
+                            oldPaths.append(pos)
+                        elif oldWeight > weight:
+                            foundPaths[around] = (weight, [pos])
+                        else:
+                            pass
+
+            curPos, nextPos = nextPos, []
+
+        # simple decompilation of path
+        to, res = posTo, [posTo]
+        while True:
+            weight, path = foundPaths[to]
+            if posFrom in path: break
+            to = choice(path)
+            res.append(to)
+
+        res.reverse()
+        return res
+
 
 
 class GoEastStrategy(Strategy):
@@ -124,7 +177,9 @@ class MotherShipStrategy(Strategy):
 
         if self.first:
             self.first = False
-            strategy = DiggerStrategy()
+            #strategy = DiggerStrategy()
+            #strategy = DiggerDirectionStrategy() 
+            strategy = DiggerFindDirectionStrategy()
         else :
             strategy = RunOnFloorStrategy(way)
 
@@ -180,15 +235,6 @@ class RunOnFloorStrategy(Strategy):
 
 class DiggerStrategy(Strategy):
 
-    def __init__(self, way, *args, **kargs):
-        super(RunOnFloorStrategy, self).__init__(*args, **kargs)
-        """way can be 'left' or 'right'"""
-        self.way = way
-        if way == 'left': self.way = -1
-        if way == 'right': self.way = 1
-
-        self.count = 0
-
     def action(self):
         # try to go one of 6 ways
         # change thoses ways into digged floor
@@ -196,7 +242,6 @@ class DiggerStrategy(Strategy):
 
         m.get(self.parent.pos).setAsFloor(True)
         possiblesPos = m.getAround(self.parent.pos)
-
 
         # filter the floors on possiblePos
         around_floor = list(filter(lambda p: m.get(p).isFloor(), possiblesPos))
@@ -213,4 +258,54 @@ class DiggerStrategy(Strategy):
 
         #nextpos = possiblesPosFloor[0]
         self.parent.pos = nextpos
+
+
+class DiggerDirectionStrategy(Strategy):
+
+    def __init__(self, direction, *args, **kargs):
+        super(DiggerDirectionStrategy, self).__init__(*args, **kargs)
+        self.direction = direction
+        self.paths = None
+
+    def _fillPath(self):
+
+        def isGood(pos, elem):
+            if elem.isFloor():
+                if elem.isDiggedFloor(): return 1
+                return 2
+            return None
+
+        m = self.parent.playmap._map
+        self.paths = self.shortestPath(isGood, self.direction)
+
+
+    def action(self):
+        if self.paths is None: self._fillPath()
+
+        m = self.parent.playmap._map
+        m.get(self.parent.pos).setAsFloor(True)
+
+        nextOne = self.paths.pop(0)
+        assert nextOne in m.getAround(self.parent.pos)
+
+        self.parent.pos = nextOne
+        if self.parent.pos == self.direction:
+            self._strategyFinished()
+
+
+class DiggerFindDirectionStrategy(Strategy):
+
+    def action(self):
+        m = self.parent.playmap._map
+        elements = list(m.findElement(lambda e: e.isFloor()))
+        p, e = choice(elements)
+
+        nextStrategy = DiggerDirectionStrategy(p)
+        nextStrategy.parent = self.parent
+
+        nextStrategy.setNextStrategy(self)
+        self.setNextStrategy(nextStrategy)
+
+        self._strategyFinished()
+        print('strategy changed with goal : ' + str(p))
 

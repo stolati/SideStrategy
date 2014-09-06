@@ -136,14 +136,12 @@ class StratMap:
         """Return position around this one
         Begin the hexa part"""
 
-        neighbors = [ # for even-q
-           [ (+1, +1), (+1,  0), ( 0, -1),
-             (-1,  0), (-1, +1), ( 0, +1) ],
-           [ (+1,  0), (+1, -1), ( 0, -1),
-             (-1, -1), (-1,  0), ( 0, +1) ]
+        neighbors = [ # for odd-q, because start of sceen is bottom
+            [ (+1,  0), (+1, -1), ( 0, -1), (-1, -1), (-1,  0), ( 0, +1) ],
+            [ (+1, +1), (+1,  0), ( 0, -1), (-1,  0), (-1, +1), ( 0, +1) ],
         ]
 
-        parity = pos.x & 1
+        parity = pos.x % 2
         res = [ pos + Pos(q, r) for q, r in neighbors[parity]]
         res = list(filter(self.isValid, res))
         return res
@@ -197,6 +195,21 @@ def addMapDirIntoRessources():
     resource_add_path(map_dir)
 
 addMapDirIntoRessources()
+
+
+def generateFullFloorMap(size = Pos(100, 50)):
+    map_res = StratMap(size)
+    for pos, e in map_res.everyElementLoop():
+        e.setAsFloor()
+    return map_res
+
+
+def generateFullAirMap(size = Pos(100, 50)):
+    map_res = StratMap(size)
+    for pos, e in map_res.everyElementLoop():
+        e.setAsAir()
+    return map_res
+
 
 
 def generateMap(size = Pos(100, 50)):
