@@ -2,6 +2,9 @@
 import kivy
 
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
+# http://www.redblobgames.com/grids/hexagons/  => hexagon code
+# http://www.hexographer.com/ => hexagon map creation
+# https://docs.python.org/3/reference/datamodel.html#object.__getitem__ => python special stuff
 
 # Things to do after :
 
@@ -13,6 +16,8 @@ import kivy
 # - groups of elements in the same clan
 # - an interface with mouse to pop elements
 # - click to ask an element to go somewhere
+
+
 
 
 
@@ -44,16 +49,13 @@ class StratGame(Widget):
         self.cellx, self.celly = stratMap.size
 
         pos1, elem1 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 1)[0]
-        pos2, elem2 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 2)[0]
-
-
         visualGreen = ColorVisual(color = named_colors.green)
         e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(speed = 3), startPos = pos1)
+        self._map.elements.append(e1)
 
+        pos2, elem2 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 2)[0]
         visualRed = ColorVisual(color = named_colors.red)
         e2 = Element(self, visual = visualRed, strategy = MotherShipStrategy(), startPos = pos2)
-
-        self._map.elements.append(e1)
         self._map.elements.append(e2)
 
         self._graphics = None # violet rectangle in background
@@ -71,24 +73,32 @@ class StratGame(Widget):
 
     def id2pos(self, x, y):
         """left 10 percent on each side"""
-        hStep, wStep = self.height * visual_marge, self.width * visual_marge
+        hMarge, wMarge = self.height * visual_marge, self.width * visual_marge
 
-        quantumy = (self.height - (2 * hStep)) / self.celly
-        quantumx = (self.width - (2 * wStep)) / self.cellx
+        quantumy = (self.height - (2 * hMarge)) / self.celly
+        quantumx = (self.width - (2 * wMarge)) / self.cellx
 
         if x % 2 == 0:
-            return (x * quantumx + wStep, y * quantumy + hStep, quantumx, quantumy)
+            return (x * quantumx + wMarge, y * quantumy + hMarge, quantumx, quantumy)
         else:
-            return (x * quantumx + wStep, (y * quantumy) + (quantumy / 2) + hStep, quantumx, quantumy)
+            return (x * quantumx + wMarge, (y * quantumy) + (quantumy / 2) + hMarge, quantumx, quantumy)
 
 
 
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
-        quantumy = self.height / self.celly
-        quantumx = self.width / self.cellx
-        return (x // quantumx, y // quantumy)
+        hMarge, wMarge = self.height * visual_marge, self.width * visual_marge
 
+        quantumy = (self.height - (2 * hMarge)) / self.celly
+        quantumx = (self.width - (2 * wMarge)) / self.cellx
+
+        xres = (x - wMarge) // quantumx
+        if xres % 2 == 0:
+            yres = (y - hMarge) // quantumy
+        else:
+            yres = (y - hMarge - (quantumy / 2)) // quantumy
+
+        return Pos(xres, yres)
 
     def drawCells(self):
         with self.canvas:
@@ -114,14 +124,14 @@ class StratGame(Widget):
     def on_touch_move(self, touch):
         """Blacken the cases when the mouse touch a case"""
         with self.canvas:
-            Color(*colors['black'])
+            named_colors.violet()
             idx, idy = self.pos2id(*touch.pos)
             posX, posY, sizeX, sizeY = self.id2pos(idx, idy)
             Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
         with self.canvas:
-            Color(*colors['black'])
+            named_colors.violet()
             idx, idy = self.pos2id(*touch.pos)
             posX, posY, sizeX, sizeY = self.id2pos(idx, idy)
             Rectangle(pos=(posX, posY), size=(sizeX, sizeY))

@@ -180,14 +180,37 @@ class RunOnFloorStrategy(Strategy):
 
 class DiggerStrategy(Strategy):
 
+    def __init__(self, way, *args, **kargs):
+        super(RunOnFloorStrategy, self).__init__(*args, **kargs)
+        """way can be 'left' or 'right'"""
+        self.way = way
+        if way == 'left': self.way = -1
+        if way == 'right': self.way = 1
+
+        self.count = 0
+
     def action(self):
         # try to go one of 6 ways
         # change thoses ways into digged floor
         m = self.parent.playmap._map
 
         m.get(self.parent.pos).setAsFloor(True)
+        possiblesPos = m.getAround(self.parent.pos)
 
-        nextpos = choice(m.getAround(self.parent.pos))
+
+        # filter the floors on possiblePos
+        around_floor = list(filter(lambda p: m.get(p).isFloor(), possiblesPos))
+
+        around_floor_digged = filter(lambda p: m.get(p).isDiggedFloor(), around_floor)
+        around_floor_undigged = filter(lambda p: not m.get(p).isDiggedFloor(), around_floor)
+        around_floor_undigged = list(around_floor_undigged)
+
+        if len(around_floor_undigged) != 0:
+            nextpos = choice(around_floor_undigged)
+        else:
+            around_floor_digged = list(around_floor_digged)
+            nextpos = choice(around_floor_digged)
+
+        #nextpos = possiblesPosFloor[0]
         self.parent.pos = nextpos
-
 

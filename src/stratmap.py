@@ -54,6 +54,9 @@ class StratMap:
     def get(self, pos):
         return self._map[pos.x][pos.y]
 
+    def getEach(self, positions):
+        for pos in positions: yield self.get(pos)
+
     def set(self, pos, v):
         self._map[pos.x][pos.y] = v
 
@@ -126,11 +129,8 @@ class StratMap:
             if e.pos == pos: yield e
 
     def isValid(self, pos):
-        if pos.x < 0: return False
-        if pos.y < 0: return False
-        if pos.x >= self.size.x: return False
-        if pos.y >= self.size.y: return False
-        return True
+        return 0 <= pos.x < self.size.x \
+            and 0 <= pos.y < self.size.y
 
     def getAround(self, pos):
         """Return position around this one

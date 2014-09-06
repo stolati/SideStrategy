@@ -13,6 +13,12 @@ class Pos(namedtuple('Pos', 'x y')):
     def __sub__(self, other):
         return Pos(self.x - other.x, self.y - other.y)
 
+    def __mul__(self, i):
+        return Pos(self.x * i, self.y * i)
+
+    def __div__(self, i):
+        return Pos(self.x // i, self.y // i)
+
     def addX(self, x):
         return Pos(self.x + x, self.y)
 
