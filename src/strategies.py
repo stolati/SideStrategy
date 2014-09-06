@@ -112,6 +112,7 @@ class MotherShipStrategy(Strategy):
         self.count = 0
         self.life = 10
         self.speed = speed
+        self.first = True
 
     def action(self):
         self.count += 1
@@ -120,7 +121,14 @@ class MotherShipStrategy(Strategy):
         playmap = self.parent.playmap
         visualMine = ColorVisual(color = self.parent.visual.color)        
         way = choice(['left', 'right'])
-        e = Element(playmap, visual = visualMine, strategy = RunOnFloorStrategy(way), startPos = self.parent.pos)
+
+        if self.first:
+            self.first = False
+            strategy = DiggerStrategy()
+        else :
+            strategy = RunOnFloorStrategy(way)
+
+        e = Element(playmap, visual = visualMine, strategy = strategy, startPos = self.parent.pos)
 
         playmap._map.elements.append(e)
 
@@ -168,4 +176,18 @@ class RunOnFloorStrategy(Strategy):
 
         #if encounter another element
         #if encounter the mothership
+
+
+class DiggerStrategy(Strategy):
+
+    def action(self):
+        # try to go one of 6 ways
+        # change thoses ways into digged floor
+        m = self.parent.playmap._map
+
+        m.get(self.parent.pos).setAsFloor(True)
+
+        nextpos = choice(m.getAround(self.parent.pos))
+        self.parent.pos = nextpos
+
 

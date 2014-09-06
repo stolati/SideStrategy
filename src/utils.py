@@ -22,12 +22,12 @@ class Pos(namedtuple('Pos', 'x y')):
 
 class NamedColor:
 
-	def __init__(self, r, g, b):
-		self.r, self.g, self.b = r, g, b
+	def __init__(self, r, g, b, t = 1):
+		self.r, self.g, self.b, self.t = r, g, b, t
 		self.rgb = (r, g, b)
 
 	def __call__(self):
-		return Color(self.r, self.g, self.b)
+		return Color(self.r, self.g, self.b, self.t)
 
 class NamedColors:
     colors = {
@@ -43,6 +43,8 @@ class NamedColors:
         'white':(1,1,1),
 
         'gray':(.5, .5, .5),
+        'none':(1, 1, 1, 0),
+        'violet':(.5, 0, 1),
     }
 
     def __getattr__(self, name):

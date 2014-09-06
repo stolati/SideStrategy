@@ -20,9 +20,11 @@ class MapElement:
         self.borders = []
 
     def isFloor(self): return self.type == 'floor'
-    def setAsFloor(self):
-        self.type = 'floor'
+    def setAsFloor(self, isDigged = False):
+        self.type, self.metadata = 'floor', isDigged
         return self
+
+    def isDiggedFloor(self): return self.type == 'floor' and self.metadata
 
     def isAir(self): return self.type == 'air'
     def setAsAir(self):
@@ -34,7 +36,6 @@ class MapElement:
     def setAsStart(self, num):
         self.type, self.metadata = 'start', num
         return self
-
 
 class StratMap:
 
@@ -74,16 +75,20 @@ class StratMap:
         size = (sizeX, sizeY)
 
         #select color
-        color = named_colors.purple #default one
+        color = None
         if e.type is None:
-            color = named_colors.gray
+            color = named_colors.none
         elif e.isAir():
             color = named_colors.white
         elif e.isFloor():
-            color = named_colors.black
+            if e.isDiggedFloor():
+               color = named_colors.gray
+            else:
+                color = named_colors.black
         elif e.isStart():
             color = named_colors.blue
-        #TODO put an exception when type not known instead of default one
+        else:
+            raise Exception('type of %s not known' % e)
 
         if e.drawElement is None:
             e.colorElement = color()
@@ -119,6 +124,29 @@ class StratMap:
     def findOnPos(self, pos):
         for e in self.elements:
             if e.pos == pos: yield e
+
+    def isValid(self, pos):
+        if pos.x < 0: return False
+        if pos.y < 0: return False
+        if pos.x >= self.size.x: return False
+        if pos.y >= self.size.y: return False
+        return True
+
+    def getAround(self, pos):
+        """Return position around this one
+        Begin the hexa part"""
+
+        neighbors = [ # for even-q
+           [ (+1, +1), (+1,  0), ( 0, -1),
+             (-1,  0), (-1, +1), ( 0, +1) ],
+           [ (+1,  0), (+1, -1), ( 0, -1),
+             (-1, -1), (-1,  0), ( 0, +1) ]
+        ]
+
+        parity = pos.x & 1
+        res = [ pos + Pos(q, r) for q, r in neighbors[parity]]
+        res = list(filter(self.isValid, res))
+        return res
 
 
 def loadMapFromFile(fileName):

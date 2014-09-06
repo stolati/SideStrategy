@@ -103,8 +103,7 @@ class StratGame(Widget):
         with self.canvas:
 
             if self._graphics is None:
-                Color(0.5, 0, 1)
-                #127, 0, 255                
+                named_colors.violet()
                 self._graphics = Rectangle(pos = (0, 0), size = (self.width, self.height))
             else :
                 self._graphics.pos = (0, 0)
