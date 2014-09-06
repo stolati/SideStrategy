@@ -17,6 +17,7 @@ class MapElement:
         self.colorElement = None
         self.type = None
         self.metadata = None #data added to the element, useful from the type
+        self.borders = []
 
     def isFloor(self): return self.type == 'floor'
     def setAsFloor(self):
@@ -43,44 +44,56 @@ class StratMap:
         self._map = [[MapElement() for y in range(size[1])] for x in range(size[0])]
         self.elements = []
 
+    def everyElementLoop(self):
+        for x in range(self.size.x):
+            for y in range(self.size.y):
+                pos = Pos(x, y)
+                yield (pos, self.get(pos))
+
     def get(self, pos):
         return self._map[pos.x][pos.y]
 
     def set(self, pos, v):
         self._map[pos.x][pos.y] = v
 
-    def drawMap(self):
-        for x in range(self.size.x):
-            for y in range(self.size.y):
-                self.drawCell(x, y)
-
-    def drawCell(self, x, y):
+    def drawMapPreparation(self):
+        if self._preparation_done: return
         posX, posY, sizeX, sizeY = self.playmap.id2pos(x, y)
+        size = Pos(sizeX, sizeY)
+
+        for pos, e in self.everyElementLoop():
+            pass 
+
+    def drawMap(self):
+        for pos, e in self.everyElementLoop():
+            self.drawCell(pos, e)
+
+    def drawCell(self, pos, e):
+        posX, posY, sizeX, sizeY = self.playmap.id2pos(pos.x, pos.y)
         pos = (posX, posY)
         size = (sizeX, sizeY)
 
-        elem = self._map[x][y]
         #select color
         color = named_colors.purple #default one
-        if elem.type is None:
+        if e.type is None:
             color = named_colors.gray
-        elif elem.isAir():
+        elif e.isAir():
             color = named_colors.white
-        elif elem.isFloor():
+        elif e.isFloor():
             color = named_colors.black
-        elif elem.isStart():
+        elif e.isStart():
             color = named_colors.blue
         #TODO put an exception when type not known instead of default one
 
-        if elem.drawElement is None:
-            elem.colorElement = color()
-            elem.drawElement = Rectangle(pos = pos, size = size)
+        if e.drawElement is None:
+            e.colorElement = color()
+            e.drawElement = Rectangle(pos = pos, size = size)
         else:
-            elem.colorElement.r = color.r
-            elem.colorElement.g = color.g
-            elem.colorElement.b = color.b
-            elem.drawElement.pos = pos
-            elem.drawElement.size = size
+            e.colorElement.r = color.r
+            e.colorElement.g = color.g
+            e.colorElement.b = color.b
+            e.drawElement.pos = pos
+            e.drawElement.size = size
 
 
     def update(self, dt):
@@ -98,12 +111,9 @@ class StratMap:
         """Find an element in the map to which the function return true
             return the (pos, element) for valid matches"""
         res = []
-        for x in range(self.size.x):
-            for y in range(self.size.y):
-                curPos = Pos(x, y)
-                elem = self.get(curPos)
-                if trueFunction(self.get(curPos)):
-                    res.append((curPos, elem))
+        for pos, e in self.everyElementLoop():
+            if trueFunction(e):
+                res.append((pos, e))
         return res
 
     def findOnPos(self, pos):
@@ -161,7 +171,7 @@ def addMapDirIntoRessources():
 addMapDirIntoRessources()
 
 
-def generateMap(size = Pos(100, 100)):
+def generateMap(size = Pos(100, 50)):
 
 
     plansize, rangeelevation_percent = 5, 15 # determining the generation

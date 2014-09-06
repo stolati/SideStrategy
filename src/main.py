@@ -4,6 +4,11 @@ import kivy
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
 
 # Things to do after :
+
+# - click handle (left/right) with position
+# - link a strategy to the element
+# - having a digger (not a gold one)
+
 # - bigger than 1x1 elements (so we can go to )
 # - groups of elements in the same clan
 # - an interface with mouse to pop elements
@@ -26,7 +31,7 @@ from stratmap import *
 from visualElement import *
 
 
-
+visual_marge = 0.01
 
 
 class StratGame(Widget):
@@ -51,6 +56,7 @@ class StratGame(Widget):
         self._map.elements.append(e1)
         self._map.elements.append(e2)
 
+        self._graphics = None # violet rectangle in background
         
         #visualGreen = ColorVisual.buildForElement(color = named_colors.green)
         #visualYellow = ColorVisual.buildForElement(color = named_colors.yellow)
@@ -64,11 +70,18 @@ class StratGame(Widget):
 
 
     def id2pos(self, x, y):
-        """return the box of position (startx, starty, sizex, sizey)"""
-        quantumy = self.height / self.celly
-        quantumx = self.width / self.cellx
+        """left 10 percent on each side"""
+        hStep, wStep = self.height * visual_marge, self.width * visual_marge
 
-        return (x * quantumx, y * quantumy, quantumx, quantumy)
+        quantumy = (self.height - (2 * hStep)) / self.celly
+        quantumx = (self.width - (2 * wStep)) / self.cellx
+
+        if x % 2 == 0:
+            return (x * quantumx + wStep, y * quantumy + hStep, quantumx, quantumy)
+        else:
+            return (x * quantumx + wStep, (y * quantumy) + (quantumy / 2) + hStep, quantumx, quantumy)
+
+
 
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
@@ -88,6 +101,15 @@ class StratGame(Widget):
     def update(self, dt):
         # (len(self.canvas.get_group(None)))
         with self.canvas:
+
+            if self._graphics is None:
+                Color(0.5, 0, 1)
+                #127, 0, 255                
+                self._graphics = Rectangle(pos = (0, 0), size = (self.width, self.height))
+            else :
+                self._graphics.pos = (0, 0)
+                self._graphics.size = (self.width, self.height)
+
             self._map.update(dt)
 
     def on_touch_move(self, touch):
