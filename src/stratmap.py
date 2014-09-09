@@ -31,11 +31,6 @@ class MapElement:
         self.type = 'air'
         return self
 
-    def isStart(self): return self.type == 'start'
-    def getStartNum(self): return self.metadata
-    def setAsStart(self, num):
-        self.type, self.metadata = 'start', num
-        return self
 
 class StratMap:
 
@@ -44,6 +39,7 @@ class StratMap:
         self.size = Pos(*size)
         self._map = [[MapElement() for y in range(size[1])] for x in range(size[0])]
         self.elements = []
+        self.starts = [] # pos of starts
 
     def everyElementLoop(self):
         for x in range(self.size.x):
@@ -106,7 +102,7 @@ class StratMap:
 
     def update(self, dt):
         for e in self.elements:
-            e.strategy.action()
+            e.current_strategy.action()
 
         #first draw the map so it will be first
         self.drawMap()
@@ -256,17 +252,18 @@ def generateMap(size = Pos(100, 50)):
     start2posx = size.x - (size.x // 10) # the red is at 10% end of map
     start2pos = Pos(start2posx, abs(elevations[start2posx]) + 1)
 
+    map_res.starts = [start1pos, start2pos]
+
     # Fill the map
     for x, elevation in enumerate(elevations):
         for y in range(size.y):
             cur_pos = Pos(x, y)
-            if cur_pos == start1pos:
-                map_res.get(cur_pos).setAsStart(1)
-            elif cur_pos == start2pos:
-                map_res.get(cur_pos).setAsStart(2)
-            elif y > elevation:
+            if y > elevation:
                 map_res.get(cur_pos).setAsAir()
             else:
                 map_res.get(cur_pos).setAsFloor()
+
+    assert map_res.get(start1pos).isAir()
+    assert map_res.get(start2pos).isAir()
 
     return map_res

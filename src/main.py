@@ -121,12 +121,12 @@ class StratGame(Widget):
     def on_touch_down(self, touch):
         pos = self.pos2id(*touch.pos)
 
+
         def isGood(e):
             return e.category == 'digger' and e.side == self.sides[0]
 
         goods = list(filter(isGood, self._map.elements))
         assert len(goods) == 1
-
         good = goods[0]
 
         # replace the current strategy

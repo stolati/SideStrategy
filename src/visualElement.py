@@ -50,22 +50,32 @@ class ColorVisual(Visual):
 
 class Element:
 
-    def __init__(self, playmap, startPos, visual, strategy):
+    def __init__(self, category, playmap, startPos, visual, strategy, side):
 
+        self.category = category
         self.playmap, self.pos = playmap, startPos
-        self.strategy = strategy
+        self.default_strategy, self.current_strategy = strategy, strategy
         self.visual = visual
-        self.strategy.parent = self
         self.visual.parent = self
+        self.side = side
+
+        self.current_strategy.parent = self
 
     def deleteMe(self):
         #deleting from the map
         try: #TODO do a better handling of deleting elements
             self.playmap._map.elements.remove(self)
             self.visual.remove()
+            self.side.remove(self)
         except:
             pass 
 
+    def setStrategy(self, strategy):
+        self.current_strategy = strategy
+        self.current_strategy.parent = self
 
-
+    def endStrategy(self):
+        self.current_strategy = self.default_strategy
+        self.current_strategy.parent = self
+        
 
