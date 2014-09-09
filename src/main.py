@@ -34,6 +34,7 @@ from strategies import *
 from utils import *
 from stratmap import *
 from visualElement import *
+from Side import *
 
 
 visual_marge = 0.01
@@ -47,28 +48,16 @@ class StratGame(Widget):
         stratMap.playmap = self
 
         self.cellx, self.celly = stratMap.size
-
-        pos1, elem1 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 1)[0]
-        visualGreen = ColorVisual(color = named_colors.green)
-        e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(speed = 3), startPos = pos1)
-        self._map.elements.append(e1)
-
-        pos2, elem2 = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 2)[0]
-        visualRed = ColorVisual(color = named_colors.red)
-        e2 = Element(self, visual = visualRed, strategy = MotherShipStrategy(), startPos = pos2)
-        self._map.elements.append(e2)
-
         self._graphics = None # violet rectangle in background
-        
-        #visualGreen = ColorVisual.buildForElement(color = named_colors.green)
-        #visualYellow = ColorVisual.buildForElement(color = named_colors.yellow)
 
-        #self._map.elements.append(Element(self, visual = visualGreen))
-        #self._map.elements.append(Element(self, strategy = RandomStrategy))
-        #self._map.elements.append(Element(self, strategy = BounceStrategy,
-        #    visual = visualYellow, startPos = Pos(2, 2)))
-        
-        #Clock.schedule_once(lambda dt: self.drawCells(), 1.0/60.0)
+        # create the map with 2 sides
+        side1 = Side(color = named_colors.green, game = self)
+        side1.createMotherShip(self._map.starts[0], speed = 3)
+
+        side2 = Side(color = named_colors.red, game = self)
+        side2.createMotherShip(self._map.starts[1])
+
+        self.sides = [side1, side2]
 
 
     def id2pos(self, x, y):
@@ -98,7 +87,7 @@ class StratGame(Widget):
         else:
             yres = (y - hMarge - (quantumy / 2)) // quantumy
 
-        return Pos(xres, yres)
+        return Pos(int(xres), int(yres))
 
     def drawCells(self):
         with self.canvas:
@@ -130,11 +119,25 @@ class StratGame(Widget):
             Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
-        with self.canvas:
-            named_colors.violet()
-            idx, idy = self.pos2id(*touch.pos)
-            posX, posY, sizeX, sizeY = self.id2pos(idx, idy)
-            Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
+        pos = self.pos2id(*touch.pos)
+
+        def isGood(e):
+            return e.category == 'digger' and e.side == self.sides[0]
+
+        goods = list(filter(isGood, self._map.elements))
+        assert len(goods) == 1
+
+        good = goods[0]
+
+        # replace the current strategy
+        good.setStrategy(DiggerDirectionStrategy(direction = pos))
+
+        #pos, elem = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 1)[0]
+        #visualGreen = ColorVisual(color = named_colors.green)
+        #e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(speed = 3), startPos = pos1)
+        #self._map.elements.append(e1)
+
+
 
 class StratApp(App):
 

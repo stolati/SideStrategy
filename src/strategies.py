@@ -9,16 +9,9 @@ from visualElement import *
 
 class Strategy:
     """Strategy interface class"""
-    def __init__(self, parent = None):
-        self.parent = parent
+    def __init__(self, parent = None, side = None):
+        self.parent, self.side = parent, side
         self.nextStrat = None #when this strategy is finished (if the strategy can be finished) 
-
-    def setNextStrategy(self, strategy):
-        self.nextStrat = strategy
-
-    def _strategyFinished(self):
-        assert self.nextStrat is not None
-        self.parent.strategy = self.nextStrat
 
     def action(self):
         pass #by default do nothing
@@ -97,6 +90,9 @@ class Strategy:
         return res
 
 
+class DoNothing(Strategy):
+    def action(self): pass
+
 
 class GoEastStrategy(Strategy):
 
@@ -171,21 +167,13 @@ class MotherShipStrategy(Strategy):
         self.count += 1
         if self.count % self.speed != 0: return
         #each 15 actions, pop a sibling
-        playmap = self.parent.playmap
-        visualMine = ColorVisual(color = self.parent.visual.color)        
-        way = choice(['left', 'right'])
 
         if self.first:
-            self.first = False
-            #strategy = DiggerStrategy()
-            #strategy = DiggerDirectionStrategy() 
-            strategy = DiggerFindDirectionStrategy()
+            self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
         else :
-            strategy = RunOnFloorStrategy(way)
+            self.parent.side.createWalker(self.parent.pos)
 
-        e = Element(playmap, visual = visualMine, strategy = strategy, startPos = self.parent.pos)
-
-        playmap._map.elements.append(e)
+        self.first = False
 
 
 class RunOnFloorStrategy(Strategy):
@@ -216,17 +204,16 @@ class RunOnFloorStrategy(Strategy):
 
             # we are encounting a enemy, getting the stategy to know what it is
             # TODO instead do a life count
-            curStrat = e.strategy.__class__
-            if curStrat == RunOnFloorStrategy:
+            if e.category == 'walker':
                 # both are destroyed
                 self.parent.deleteMe()
                 e.deleteMe()
 
-            if curStrat == MotherShipStrategy:
+            if e.category == 'mothership':
                 self.parent.deleteMe()
 
-                e.strategy.life -= 1
-                if e.strategy.life == 0:
+                e.current_strategy.life -= 1
+                if e.current_strategy.life == 0:
                     e.deleteMe()
 
         #if encounter another element
@@ -286,11 +273,16 @@ class DiggerDirectionStrategy(Strategy):
         m.get(self.parent.pos).setAsFloor(True)
 
         nextOne = self.paths.pop(0)
+        if nextOne not in m.getAround(self.parent.pos):
+            # special case, I don't want to deal that now
+            self.parent.endStrategy()
+            return
+
         assert nextOne in m.getAround(self.parent.pos)
 
         self.parent.pos = nextOne
         if self.parent.pos == self.direction:
-            self._strategyFinished()
+            self.parent.endStrategy()
 
 
 class DiggerFindDirectionStrategy(Strategy):
@@ -300,12 +292,4 @@ class DiggerFindDirectionStrategy(Strategy):
         elements = list(m.findElement(lambda e: e.isFloor()))
         p, e = choice(elements)
 
-        nextStrategy = DiggerDirectionStrategy(p)
-        nextStrategy.parent = self.parent
-
-        nextStrategy.setNextStrategy(self)
-        self.setNextStrategy(nextStrategy)
-
-        self._strategyFinished()
-        print('strategy changed with goal : ' + str(p))
-
+        self.parent.setStrategy(DiggerDirectionStrategy(p))
