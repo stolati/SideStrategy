@@ -293,3 +293,6 @@ class DiggerFindDirectionStrategy(Strategy):
         p, e = choice(elements)
 
         self.parent.setStrategy(DiggerDirectionStrategy(p))
+
+
+        

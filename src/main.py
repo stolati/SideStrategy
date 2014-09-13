@@ -51,13 +51,14 @@ class StratGame(Widget):
         self._graphics = None # violet rectangle in background
 
         # create the map with 2 sides
-        side1 = Side(color = named_colors.green, game = self)
-        side1.createMotherShip(self._map.starts[0], speed = 3)
+        userSide = Side(color = named_colors.green, game = self)
+        userSide.createMotherShip(self._map.starts[0], speed = 3)
 
-        side2 = Side(color = named_colors.red, game = self)
-        side2.createMotherShip(self._map.starts[1])
+        computerSide = Side(color = named_colors.red, game = self)
+        computerSide.createMotherShip(self._map.starts[1])
 
-        self.sides = [side1, side2]
+        self.userSide = userSide
+        self.computerSide = computerSide
 
 
     def id2pos(self, x, y):
@@ -121,21 +122,7 @@ class StratGame(Widget):
     def on_touch_down(self, touch):
         pos = self.pos2id(*touch.pos)
 
-
-        def isGood(e):
-            return e.category == 'digger' and e.side == self.sides[0]
-
-        goods = list(filter(isGood, self._map.elements))
-        assert len(goods) == 1
-        good = goods[0]
-
-        # replace the current strategy
-        good.setStrategy(DiggerDirectionStrategy(direction = pos))
-
-        #pos, elem = stratMap.findElement(lambda e : e.isStart() and e.getStartNum() == 1)[0]
-        #visualGreen = ColorVisual(color = named_colors.green)
-        #e1 = Element(self, visual = visualGreen, strategy = MotherShipStrategy(speed = 3), startPos = pos1)
-        #self._map.elements.append(e1)
+        self.userSide.command_touch(pos)
 
 
 
