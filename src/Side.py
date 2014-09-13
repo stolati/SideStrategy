@@ -41,17 +41,41 @@ class Side:
         )
         self.game._map.elements.append(e)
 
+    def createFlyer(self, position, **kargs):
+        e = Element('flyer', playmap = self.game, side = self, startPos = position,
+            visual = ColorVisual(color = self.color),
+            strategy = FlyerFindDirectionStrategy(**kargs)
+        )
+        self.game._map.elements.append(e)
+
 
     def command_touch(self, pos):
 
-        #find the digger from us side
-        def isGood(e):
-            return e.category == 'digger' and e.side == self
+        elem = self.game._map.get(pos)
+        if elem.isFloor():
 
-        goods = list(filter(isGood, self.game._map.elements))
-        assert len(goods) == 1
-        good = goods[0]
+            #find the digger from us side
+            def isGood(e):
+                return e.category == 'digger' and e.side == self
 
-        # replace the current strategy
-        good.setStrategy(DiggerDirectionStrategy(direction = pos))
+            goods = list(filter(isGood, self.game._map.elements))
+            assert len(goods) == 1
+            good = goods[0]
+
+            # replace the current strategy
+            good.setStrategy(DiggerDirectionStrategy(direction = pos))
+
+        if elem.isAir():
+
+            #find the digger from us side
+            def isGood(e):
+                return e.category == 'flyer' and e.side == self
+
+            goods = list(filter(isGood, self.game._map.elements))
+            assert len(goods) == 1
+            good = goods[0]
+
+            # replace the current strategy
+            good.setStrategy(FlyerDirectionStrategy(direction = pos))
+
 

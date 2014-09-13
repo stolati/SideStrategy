@@ -15,8 +15,8 @@ import kivy
 # - bigger than 1x1 elements (so we can go to )
 # - groups of elements in the same clan
 # - an interface with mouse to pop elements
-# - click to ask an element to go somewhere
 
+# - we should avoid beiing to near the sky-floor limit for flyers and diggers
 
 
 

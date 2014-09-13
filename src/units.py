@@ -37,3 +37,8 @@
 # Put seed on the floor that can become other things.
 
 # In other words, terran, zerg and protos, yes, my strategy game culture is limited to that
+
+# magicians can flood the map with dinosaurs which are not agressive
+# then they can use them to move around (calling the nearest for help)
+# a user can be actively agressive to them, but it will take them some time/energy to do so
+# do we want to do it or not ? (once attacted, the dinausors are agressive)

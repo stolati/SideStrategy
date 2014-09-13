@@ -170,6 +170,7 @@ class MotherShipStrategy(Strategy):
 
         if self.first:
             self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
+            self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
         else :
             self.parent.side.createWalker(self.parent.pos)
 
@@ -221,6 +222,8 @@ class RunOnFloorStrategy(Strategy):
 
 
 class DiggerStrategy(Strategy):
+    """ Go around in a random fashion
+    Choosing first non-digged floor then digged floor"""
 
     def action(self):
         # try to go one of 6 ways
@@ -272,6 +275,10 @@ class DiggerDirectionStrategy(Strategy):
         m = self.parent.playmap._map
         m.get(self.parent.pos).setAsFloor(True)
 
+        if not self.paths:
+            self.parent.endStrategy()
+            return
+
         nextOne = self.paths.pop(0)
         if nextOne not in m.getAround(self.parent.pos):
             # special case, I don't want to deal that now
@@ -295,4 +302,50 @@ class DiggerFindDirectionStrategy(Strategy):
         self.parent.setStrategy(DiggerDirectionStrategy(p))
 
 
-        
+
+class FlyerDirectionStrategy(Strategy):
+
+    def __init__(self, direction, *args, **kargs):
+        super(FlyerDirectionStrategy, self).__init__(*args, **kargs)
+        self.direction = direction
+        self.paths = None
+
+    def _fillPath(self):
+
+        def isGood(pos, elem):
+            if elem.isAir(): return 1
+            return None
+
+        m = self.parent.playmap._map
+        self.paths = self.shortestPath(isGood, self.direction)
+
+
+    def action(self):
+        if self.paths is None: self._fillPath()
+
+        m = self.parent.playmap._map
+
+        if not self.paths:
+            self.parent.endStrategy()
+            return
+
+        nextOne = self.paths.pop(0)
+        if nextOne not in m.getAround(self.parent.pos):
+            # special case, I don't want to deal that now
+            self.parent.endStrategy()
+            return
+
+        assert nextOne in m.getAround(self.parent.pos)
+
+        self.parent.pos = nextOne
+        if self.parent.pos == self.direction:
+            self.parent.endStrategy()
+
+class FlyerFindDirectionStrategy(Strategy):
+
+    def action(self):
+        m = self.parent.playmap._map
+        elements = list(m.findElement(lambda e: e.isAir()))
+        p, e = choice(elements)
+
+        self.parent.setStrategy(FlyerDirectionStrategy(p))
