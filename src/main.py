@@ -1,6 +1,8 @@
 #!/usr/bin/kivy
 import kivy
 
+import sys
+
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
 # http://www.redblobgames.com/grids/hexagons/  => hexagon code
 # http://www.hexographer.com/ => hexagon map creation
@@ -25,6 +27,7 @@ import kivy
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
+from kivy.uix.scatter import Scatter
 from kivy.properties import NumericProperty, ReferenceListProperty
 from kivy.vector import Vector
 from kivy.clock import Clock
@@ -46,6 +49,8 @@ class StratGame(Widget):
         super(StratGame, self).__init__(**kargs)
         self._map = stratMap
         stratMap.playmap = self
+
+        self.zoom = 2
 
         self.cellx, self.celly = stratMap.size
         self._graphics = None # violet rectangle in background
@@ -69,14 +74,22 @@ class StratGame(Widget):
         quantumx = (self.width - (2 * wMarge)) / self.cellx
 
         if x % 2 == 0:
-            return (x * quantumx + wMarge, y * quantumy + hMarge, quantumx, quantumy)
+            x, y, qx, qy = (x * quantumx + wMarge, y * quantumy + hMarge, quantumx, quantumy)
         else:
-            return (x * quantumx + wMarge, (y * quantumy) + (quantumy / 2) + hMarge, quantumx, quantumy)
+            x, y, qx, qy = (x * quantumx + wMarge, (y * quantumy) + (quantumy / 2) + hMarge, quantumx, quantumy)
 
+        return (x * self.zoom, y * self.zoom, qx * self.zoom, qy * self.zoom)
 
 
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
+
+        x, y = Pos(x, y) // self.zoom
+
+        if x < 0 or x > self.cellx or y < 0 or y > self.celly:
+            print('coordinates out of range', file = sys.stdout)
+            return None
+
         hMarge, wMarge = self.height * visual_marge, self.width * visual_marge
 
         quantumy = (self.height - (2 * hMarge)) / self.celly
@@ -112,16 +125,33 @@ class StratGame(Widget):
             self._map.update(dt)
 
     def on_touch_move(self, touch):
+        print('on_touch_move')
+        print(touch)
+        print('button : ' + repr(touch.button))
+
         """Blacken the cases when the mouse touch a case"""
         with self.canvas:
             named_colors.violet()
-            idx, idy = self.pos2id(*touch.pos)
+            pos = self.pos2id(*touch.pos)
+            if pos is None : return
+
+            idx, idy = pos
             posX, posY, sizeX, sizeY = self.id2pos(idx, idy)
             Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
-        pos = self.pos2id(*touch.pos)
 
+        if touch.button == 'scrolldown':
+            self.zoom += 0.1
+            return
+
+        if touch.button == 'scrollup':
+            self.zoom -= 0.1
+            return
+
+
+        pos = self.pos2id(*touch.pos)
+        if pos is None: return
         self.userSide.command_touch(pos)
 
 
@@ -135,6 +165,7 @@ class StratApp(App):
         self._map = generateMap()
 
         self._game = StratGame(self._map)
+
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)
         return self._game
