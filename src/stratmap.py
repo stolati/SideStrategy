@@ -48,7 +48,10 @@ class StratMap:
                 yield (pos, self.get(pos))
 
     def get(self, pos):
-        return self._map[pos.x][pos.y]
+        try:
+            return self._map[pos.x][pos.y]
+        except:
+            raise IndexError('index %s out of range' % (str(pos),))
 
     def getEach(self, positions):
         for pos in positions: yield self.get(pos)
@@ -120,9 +123,9 @@ class StratMap:
                 res.append((pos, e))
         return res
 
-    def findOnPos(self, pos):
+    def findOnPos(self, pos, except_me = None):
         for e in self.elements:
-            if e.pos == pos: yield e
+            if e is not except_me and e.pos == pos: yield e
 
     def isValid(self, pos):
         return 0 <= pos.x < self.size.x \
@@ -141,6 +144,21 @@ class StratMap:
         res = [ pos + Pos(q, r) for q, r in neighbors[parity]]
         res = list(filter(self.isValid, res))
         return res
+
+    def getRadius(self, pos, radius):
+        """Return every elements from a radius
+        and also every movable element"""
+        # for hexagonal map, only int are allowed
+        # for squared map, we can have 1.5 elements
+
+        for deltaX in range(-radius, radius + 1):
+            for deltaY in range( max(-radius, -deltaX-radius), min(radius, -deltaX+radius) + 1):
+                deltaZ = -deltaX - deltaY
+
+                newPos = Pos(deltaX, deltaZ) + pos
+                if self.isValid(newPos):
+                    yield newPos
+
 
 
 def loadMapFromFile(fileName):

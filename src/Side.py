@@ -48,6 +48,13 @@ class Side:
         )
         self.game._map.elements.append(e)
 
+    def createMissile(self, position, **kargs):
+        e = Element('missile', playmap = self.game, side = self, startPos = position,
+            visual = ColorVisual(color = self.color),
+            strategy = MissileStrategy(**kargs)
+        )
+        self.game._map.elements.append(e)
+
 
     def command_touch(self, pos):
 

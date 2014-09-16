@@ -43,6 +43,10 @@ class Strategy:
             #we are not on floor
             while not m.get(pos).isFloor():
                 pos = pos + Pos(0, -1)
+                if not m.isValid(pos):
+                    self.parent.deleteMe()
+                    return None
+
             pos = pos + Pos(0, 1) #return to the last no-floor element
 
         return pos
@@ -81,6 +85,8 @@ class Strategy:
         # simple decompilation of path
         to, res = posTo, [posTo]
         while True:
+            if to not in foundPaths:
+                break #TODO correct shortest path code
             weight, path = foundPaths[to]
             if posFrom in path: break
             to = choice(path)
@@ -194,13 +200,13 @@ class RunOnFloorStrategy(Strategy):
 
         self.way, pos = self.advanceOneStepAndBounce(self.way, self.parent.pos)
         pos = self.putOnFloor(pos)
+        if pos is None: return
 
         self.parent.pos = pos
 
         #hack for now, get current color
         selfCol = self.parent.visual.color
-        for e in self.parent.playmap._map.findOnPos(pos):
-            if e is self.parent: continue #TODO do a helper for this loop
+        for e in self.parent.playmap._map.findOnPos(pos, self.parent):
             if e.visual.color == selfCol: continue #TODO replace that by side
 
             # we are encounting a enemy, getting the stategy to know what it is
@@ -344,8 +350,55 @@ class FlyerDirectionStrategy(Strategy):
 class FlyerFindDirectionStrategy(Strategy):
 
     def action(self):
+        self.parent.side.createMissile(self.parent.pos + Pos(0, -1)) 
+
         m = self.parent.playmap._map
         elements = list(m.findElement(lambda e: e.isAir()))
         p, e = choice(elements)
 
         self.parent.setStrategy(FlyerDirectionStrategy(p))
+
+class MissileStrategy(Strategy):
+    """Go strait down and when it ground,
+    do a dig on it"""
+
+    def __init__(self, *args, **kargs):
+        super(MissileStrategy, self).__init__(*args, **kargs)
+
+    def explode(self):
+
+        m = self.parent.playmap._map
+        for pos in m.getRadius(self.parent.pos, 2):
+            m.get(pos).setAsAir()
+
+            for e in m.findOnPos(pos, self.parent):
+                if e.side == self.parent.side: continue
+                e.deleteMe() #we are destroying everything
+
+        # find every element from a radius
+        # then destroy them
+
+        # find also 
+
+
+    def step(self):
+        m = self.parent.playmap._map
+
+        self.parent.pos += Pos(0, -1)
+
+        if not m.isValid(self.parent.pos):
+            self.parent.deleteMe()
+        elif m.get(self.parent.pos).isFloor():
+            self.parent.deleteMe()
+            self.explode()
+
+
+    def action(self):
+
+        # a missile is way faster (2 times for now)
+        self.step()
+        self.step()
+
+
+
+
