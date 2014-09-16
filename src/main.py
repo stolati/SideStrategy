@@ -2,6 +2,7 @@
 import kivy
 
 import sys
+from pprint import pprint
 
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
 # http://www.redblobgames.com/grids/hexagons/  => hexagon code
@@ -42,15 +43,12 @@ from Side import *
 
 visual_marge = 0.01
 
-
 class StratGame(Widget):
 
     def __init__(self, stratMap, **kargs):
         super(StratGame, self).__init__(**kargs)
         self._map = stratMap
         stratMap.playmap = self
-
-        self.zoom = 2
 
         self.cellx, self.celly = stratMap.size
         self._graphics = None # violet rectangle in background
@@ -78,17 +76,11 @@ class StratGame(Widget):
         else:
             x, y, qx, qy = (x * quantumx + wMarge, (y * quantumy) + (quantumy / 2) + hMarge, quantumx, quantumy)
 
-        return (x * self.zoom, y * self.zoom, qx * self.zoom, qy * self.zoom)
+        return (x, y, qx, qy)
 
 
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
-
-        x, y = Pos(x, y) // self.zoom
-
-        if x < 0 or x > self.cellx or y < 0 or y > self.celly:
-            print('coordinates out of range', file = sys.stdout)
-            return None
 
         hMarge, wMarge = self.height * visual_marge, self.width * visual_marge
 
@@ -140,15 +132,17 @@ class StratGame(Widget):
             Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
+        #print('touch down')
+        #print(touch.x)
+        #print(touch.y)
 
-        if touch.button == 'scrolldown':
-            self.zoom += 0.1
-            return
+        #if touch.button == 'scrolldown':
+        #    self.zoom = min(self.zoom * 1.05, zoom_max)
+        #    return
 
-        if touch.button == 'scrollup':
-            self.zoom -= 0.1
-            return
-
+        #if touch.button == 'scrollup':
+        #    self.zoom = max(self.zoom / 1.05, 1)
+        #    return
 
         pos = self.pos2id(*touch.pos)
         if pos is None: return
