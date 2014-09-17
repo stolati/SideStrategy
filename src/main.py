@@ -2,6 +2,7 @@
 import kivy
 
 import sys
+import random
 from pprint import pprint
 
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
@@ -13,14 +14,13 @@ from pprint import pprint
 
 # - click handle (left/right) with position
 # - link a strategy to the element
-# - having a digger (not a gold one)
 
 # - bigger than 1x1 elements (so we can go to )
-# - groups of elements in the same clan
 # - an interface with mouse to pop elements
 
 # - we should avoid beiing to near the sky-floor limit for flyers and diggers
 
+# - put map type into there own class
 
 
 
@@ -39,16 +39,17 @@ from utils import *
 from stratmap import *
 from visualElement import *
 from Side import *
-
+from mapType import *
 
 visual_marge = 0.01
 
 class StratGame(Widget):
 
-    def __init__(self, stratMap, **kargs):
+    def __init__(self, stratMap, mapTypeInst, **kargs):
         super(StratGame, self).__init__(**kargs)
         self._map = stratMap
         stratMap.playmap = self
+        self.mapTypeInst = mapTypeInst
 
         self.cellx, self.celly = stratMap.size
         self._graphics = None # violet rectangle in background
@@ -71,12 +72,9 @@ class StratGame(Widget):
         quantumy = (self.height - (2 * hMarge)) / self.celly
         quantumx = (self.width - (2 * wMarge)) / self.cellx
 
-        if x % 2 == 0:
-            x, y, qx, qy = (x * quantumx + wMarge, y * quantumy + hMarge, quantumx, quantumy)
-        else:
-            x, y, qx, qy = (x * quantumx + wMarge, (y * quantumy) + (quantumy / 2) + hMarge, quantumx, quantumy)
+        xres, yres = self.mapTypeInst.pos2pixel(Pos(x, y), quantumx, quantumy)
 
-        return (x, y, qx, qy)
+        return (xres + hMarge, yres + wMarge, quantumx, quantumy)
 
 
     def pos2id(self, x, y):
@@ -87,13 +85,8 @@ class StratGame(Widget):
         quantumy = (self.height - (2 * hMarge)) / self.celly
         quantumx = (self.width - (2 * wMarge)) / self.cellx
 
-        xres = (x - wMarge) // quantumx
-        if xres % 2 == 0:
-            yres = (y - hMarge) // quantumy
-        else:
-            yres = (y - hMarge - (quantumy / 2)) // quantumy
-
-        return Pos(int(xres), int(yres))
+        pos = Pos(x - hMarge, y - wMarge)
+        return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
 
     def drawCells(self):
         with self.canvas:
@@ -156,9 +149,11 @@ class StratApp(App):
 
         #self._map = loadMapFromFile('map03')
 
-        self._map = generateMap()
+        mapTypeInst = random.choice([OddQ(), Squared()])
 
-        self._game = StratGame(self._map)
+        self._map = generateMap(mapTypeInst = mapTypeInst)
+
+        self._game = StratGame(self._map, mapTypeInst)
 
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)

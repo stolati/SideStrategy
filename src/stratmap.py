@@ -5,11 +5,13 @@ from kivy.resources import *
 from strategies import *
 from utils import *
 from functools import reduce
+import mapType
 
 import random
 import math
 
 import os, os.path, sys
+from pprint import pprint
 
 class MapElement:
     def __init__(self):
@@ -34,12 +36,13 @@ class MapElement:
 
 class StratMap:
 
-    def __init__(self, size = (40, 20), playmap = None):
+    def __init__(self, size = (40, 20), mapTypeInst = mapType.Squared(), playmap = None):
         self.playmap = playmap
         self.size = Pos(*size)
         self._map = [[MapElement() for y in range(size[1])] for x in range(size[0])]
         self.elements = []
         self.starts = [] # pos of starts
+        self.mapTypeInst = mapTypeInst
 
     def everyElementLoop(self):
         for x in range(self.size.x):
@@ -135,15 +138,7 @@ class StratMap:
         """Return position around this one
         Begin the hexa part"""
 
-        neighbors = [ # for odd-q, because start of sceen is bottom
-            [ (+1,  0), (+1, -1), ( 0, -1), (-1, -1), (-1,  0), ( 0, +1) ],
-            [ (+1, +1), (+1,  0), ( 0, -1), (-1,  0), (-1, +1), ( 0, +1) ],
-        ]
-
-        parity = pos.x % 2
-        res = [ pos + Pos(q, r) for q, r in neighbors[parity]]
-        res = list(filter(self.isValid, res))
-        return res
+        return list(filter(self.isValid, self.mapTypeInst.getAround(pos)))
 
     def getRadius(self, pos, radius):
         """Return every elements from a radius
@@ -151,13 +146,8 @@ class StratMap:
         # for hexagonal map, only int are allowed
         # for squared map, we can have 1.5 elements
 
-        for deltaX in range(-radius, radius + 1):
-            for deltaY in range( max(-radius, -deltaX-radius), min(radius, -deltaX+radius) + 1):
-                deltaZ = -deltaX - deltaY
+        return filter(self.isValid, self.mapTypeInst.getRadius(pos, radius))
 
-                newPos = Pos(deltaX, deltaZ) + pos
-                if self.isValid(newPos):
-                    yield newPos
 
 
 
@@ -226,7 +216,7 @@ def generateFullAirMap(size = Pos(100, 50)):
 
 
 
-def generateMap(size = Pos(100, 50)):
+def generateMap(size = Pos(100, 50), mapTypeInst = mapType.Squared()):
 
 
     plansize, rangeelevation_percent = 5, 15 # determining the generation
@@ -262,7 +252,7 @@ def generateMap(size = Pos(100, 50)):
 
         elevations.append(cur_ele)
 
-    map_res = StratMap(size)
+    map_res = StratMap(size, mapTypeInst)
 
     start1posx = size.x // 10 # the green is at 10% start of map
     start1pos = Pos(start1posx, abs(elevations[start1posx]) + 1)
