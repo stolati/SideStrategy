@@ -101,13 +101,14 @@ class StratGame(Widget):
         with self.canvas:
 
             if self._graphics is None:
-                named_colors.violet()
+                named_colors.black()
                 self._graphics = Rectangle(pos = (0, 0), size = (self.width, self.height))
             else :
                 self._graphics.pos = (0, 0)
                 self._graphics.size = (self.width, self.height)
 
-            self._map.update(dt)
+            self.userSide.updateMap(dt)
+            #self._map.update(dt)
 
     def on_touch_move(self, touch):
         print('on_touch_move')

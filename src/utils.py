@@ -51,6 +51,7 @@ class NamedColors:
         'gray':(.5, .5, .5),
         'none':(1, 1, 1, 0),
         'violet':(.5, 0, 1),
+        'brown':(.5, .25, .25),
     }
 
     def __getattr__(self, name):

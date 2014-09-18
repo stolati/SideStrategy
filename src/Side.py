@@ -6,6 +6,7 @@ import random
 from visualElement import *
 from strategies import *
 from utils import *
+from stratmap import *
 
 
 class Side:
@@ -14,6 +15,39 @@ class Side:
         self.color = color
         self.game = game
         self.elements = {}
+        self._map = game._map.duplicateWithFog()
+
+    def updateMap(self, dt):
+        #self.game._map.update(dt)
+        #return
+
+        listElement = list(self.game._map.elements)
+
+        # get elements from ourselves
+        ourElements = list(filter(lambda e: e.side == self, listElement))
+        notOurElements = list(filter(lambda e: e.side != self, listElement))
+        visiblePos = set()
+
+        # init the current map to fog everywhere
+        for pos, e in self._map.everyElementLoop():
+            e.setIsInFog()
+
+        for curOurElem in ourElements:
+            for pos in self.game._map.getRadius(curOurElem.pos, 5):
+                visiblePos.add(pos)
+
+        for pos in visiblePos:
+            curElem = self._map.get(pos)
+            self.game._map.get(pos).applyType(curElem)
+            curElem.setIsInFog(False)
+
+        self._map.elements = ourElements
+        for notOurElement in notOurElements:
+            if notOurElement.pos in visiblePos:
+                self._map.elements.append(notOurElement)
+
+        self._map.update(dt)
+
 
     def createMotherShip(self, position, **kargs):
         e = Element('mothership', playmap = self.game, side = self, startPos = position,

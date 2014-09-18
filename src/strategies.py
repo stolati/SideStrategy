@@ -399,6 +399,3 @@ class MissileStrategy(Strategy):
         self.step()
         self.step()
 
-
-
-

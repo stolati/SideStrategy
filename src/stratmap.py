@@ -17,9 +17,14 @@ class MapElement:
     def __init__(self):
         self.drawElement = None
         self.colorElement = None
-        self.type = None
+        self.type = 'unknown'
         self.metadata = None #data added to the element, useful from the type
         self.borders = []
+        self.in_fog = True
+
+    def applyType(self, otherElement):
+        otherElement.type = self.type
+        otherElement.metadata = self.metadata
 
     def isFloor(self): return self.type == 'floor'
     def setAsFloor(self, isDigged = False):
@@ -33,6 +38,16 @@ class MapElement:
         self.type = 'air'
         return self
 
+    def isUnknown(self): return self.type == 'unknown'
+    def setAsUnknown(self):
+        self.type = 'unknown'
+        return self
+
+    def isInFog(self): return self.in_fog
+    def setIsInFog(self, in_fog = True):
+        self.in_fog = in_fog
+        return self
+
 
 class StratMap:
 
@@ -43,6 +58,9 @@ class StratMap:
         self.elements = []
         self.starts = [] # pos of starts
         self.mapTypeInst = mapTypeInst
+
+    def duplicateWithFog(self):
+        return StratMap(size = self.size, mapTypeInst = self.mapTypeInst, playmap = self.playmap)
 
     def everyElementLoop(self):
         for x in range(self.size.x):
@@ -81,19 +99,20 @@ class StratMap:
 
         #select color
         color = None
-        if e.type is None:
-            color = named_colors.none
-        elif e.isAir():
+        if e.isAir():
             color = named_colors.white
         elif e.isFloor():
             if e.isDiggedFloor():
                color = named_colors.gray
             else:
-                color = named_colors.black
-        elif e.isStart():
-            color = named_colors.blue
+                color = named_colors.brown
+        elif e.isUnknown():
+            color = named_colors.black
         else:
             raise Exception('type of %s not known' % e)
+
+        if e.isInFog():
+            color.t = .5
 
         if e.drawElement is None:
             e.colorElement = color()
@@ -102,6 +121,7 @@ class StratMap:
             e.colorElement.r = color.r
             e.colorElement.g = color.g
             e.colorElement.b = color.b
+            e.colorElement.a = color.t
             e.drawElement.pos = pos
             e.drawElement.size = size
 

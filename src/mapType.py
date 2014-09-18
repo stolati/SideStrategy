@@ -1,6 +1,7 @@
 
 
 from utils import *
+from math import hypot
 
 
 # This file is referency maps with there own algorythms
@@ -17,15 +18,29 @@ class MapType:
 
 class Squared(MapType):
 
+    _radiusElements = {}
+
     def getAround(self, pos):
         around = [Pos(0, 1), Pos(0, -1), Pos(1, 0), Pos(-1, 0)]
         for delta in around:
             yield pos + delta
 
     def getRadius(self, pos, radius):
-        for x in range(pos.x - radius, pos.x + radius + 1):
-            for y in range(pos.y - radius, pos.y + radius + 1):
-                yield Pos(x, y)
+        radius = int(radius)
+
+        if radius not in Squared._radiusElements:
+            elements = []
+            for x in range(- radius, radius + 1):
+                for y in range(- radius, radius + 1):
+                    dist = hypot(x, y)
+                    if dist <= radius:
+                        elements.append(Pos(x, y))
+
+            Squared._radiusElements[int(radius)] = elements
+
+        for deltaPos in Squared._radiusElements[radius]:
+            yield pos + deltaPos
+
 
     def pixel2pos(self, pixelPos, sizeCellWidth, sizeCellHeight):
 
@@ -105,7 +120,8 @@ class OddQ(Hexagonal):
         for deltaX in range(-radius, radius + 1):
             for deltaY in range( max(-radius, -deltaX-radius), min(radius, -deltaX+radius) + 1):
                 deltaZ = -deltaX - deltaY
-                yield Pos(deltaX, deltaZ) + pos
+                #yield Pos(deltaX, deltaZ) + pos
+                yield pos + Pos(*self.XYZ2RQ(deltaX, deltaY, deltaZ))
 
 # For future
 #class OddR(Hexagonal):
