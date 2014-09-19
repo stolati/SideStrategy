@@ -7,6 +7,7 @@ from visualElement import *
 from strategies import *
 from utils import *
 from stratmap import *
+from viewfield import *
 
 
 class Side:
@@ -36,7 +37,7 @@ class Side:
             e.setIsInFog()
 
         for curOurElem in ourElements:
-            for pos in self.game._map.getRadius(curOurElem.pos, 5):
+            for pos in curOurElem.viewfield.getViewPos():
                 visiblePos.add(pos)
 
         for pos in visiblePos:
@@ -61,7 +62,8 @@ class Side:
     def createMotherShip(self, position, **kargs):
         e = Element('mothership', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
-            strategy = MotherShipStrategy(**kargs)
+            strategy = MotherShipStrategy(**kargs),
+            viewfield = ViewFieldBasic(),
         )
         self.game._map.elements.append(e)
 
@@ -71,7 +73,8 @@ class Side:
 
         e = Element('walker', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
-            strategy = RunOnFloorStrategy(way = way, **kargs)
+            strategy = RunOnFloorStrategy(way = way, **kargs),
+            viewfield = ViewFieldBasic(),
         )
         self.game._map.elements.append(e)
 
@@ -80,21 +83,24 @@ class Side:
             visual = ColorVisual(color = self.color),
             #strategy = DiggerStrategy()
             #strategy = DiggerDirectionStrategy()
-            strategy = DiggerFindDirectionStrategy(**kargs)
+            strategy = DiggerFindDirectionStrategy(**kargs),
+            viewfield = ViewFieldUnderground(),
         )
         self.game._map.elements.append(e)
 
     def createFlyer(self, position, **kargs):
         e = Element('flyer', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
-            strategy = FlyerFindDirectionStrategy(**kargs)
+            strategy = FlyerFindDirectionStrategy(**kargs),
+            viewfield = ViewFieldBasic(),
         )
         self.game._map.elements.append(e)
 
     def createMissile(self, position, **kargs):
         e = Element('missile', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
-            strategy = MissileStrategy(**kargs)
+            strategy = MissileStrategy(**kargs),
+            viewfield = ViewFieldBasic(),
         )
         self.game._map.elements.append(e)
 

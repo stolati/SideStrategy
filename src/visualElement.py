@@ -60,7 +60,7 @@ class ColorVisual(Visual):
 
 class Element:
 
-    def __init__(self, category, playmap, startPos, visual, strategy, side):
+    def __init__(self, category, playmap, startPos, visual, strategy, side, viewfield):
 
         self.category = category
         self.playmap, self.pos = playmap, startPos
@@ -68,7 +68,9 @@ class Element:
         self.visual = visual
         self.visual.parent = self
         self.side = side
+        self.viewfield = viewfield
 
+        self.viewfield.parent = self
         self.current_strategy.parent = self
 
     def deleteMe(self):
