@@ -96,6 +96,25 @@ class Strategy:
         return res
 
 
+class Speed():
+
+    def __init__(self, speed = 1):
+        self.speed = speed #1 mean everytimes, more means waiting
+        self.count = 0
+
+    def moveStep():
+        if self.speed is None: return 0 #None as speed mean immobile
+        if self.speed < 0: return -self.speed # minus 0 mean multiples times per ticks
+        if self.speed == 0: return 1
+
+        if self.count >= self.speed:
+            self.count = 0
+            return 1
+
+        self.count += 1
+        return 0
+
+
 class DoNothing(Strategy):
     def action(self): pass
 
@@ -315,7 +334,7 @@ class DiggerFindDirectionStrategy(Strategy):
 
         if not m.get(self.parent.pos).isFloor():
             self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
-            
+
         elements = list(m.findElement(lambda e: e.isFloor()))
         p, e = choice(elements)
 

@@ -64,6 +64,7 @@ class Side:
             visual = ColorVisual(color = self.color),
             strategy = MotherShipStrategy(**kargs),
             viewfield = ViewFieldAroundSimple(5),
+            speed = Speed(None),
         )
         self.game._map.elements.append(e)
 
@@ -75,6 +76,7 @@ class Side:
             visual = ColorVisual(color = self.color),
             strategy = RunOnFloorStrategy(way = way, **kargs),
             viewfield = ViewFieldGroundBlock(5),
+            speed = Speed(3),
         )
         self.game._map.elements.append(e)
 
@@ -85,6 +87,7 @@ class Side:
             #strategy = DiggerDirectionStrategy()
             strategy = DiggerFindDirectionStrategy(**kargs),
             viewfield = ViewFieldAroundSimple(2),
+            speed = Speed(5),
         )
         self.game._map.elements.append(e)
 
@@ -93,6 +96,7 @@ class Side:
             visual = ColorVisual(color = self.color),
             strategy = FlyerFindDirectionStrategy(**kargs),
             viewfield = ViewFieldGroundBlock(10),
+            speed = Speed(1),
         )
         self.game._map.elements.append(e)
 
@@ -101,6 +105,7 @@ class Side:
             visual = ColorVisual(color = self.color),
             strategy = MissileStrategy(**kargs),
             viewfield = ViewFieldAroundSimple(1),
+            speed = Speed(-3),
         )
         self.game._map.elements.append(e)
 

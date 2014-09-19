@@ -60,7 +60,7 @@ class ColorVisual(Visual):
 
 class Element:
 
-    def __init__(self, category, playmap, startPos, visual, strategy, side, viewfield):
+    def __init__(self, category, playmap, startPos, visual, strategy, side, viewfield, speed):
 
         self.category = category
         self.playmap, self.pos = playmap, startPos
@@ -69,6 +69,7 @@ class Element:
         self.visual.parent = self
         self.side = side
         self.viewfield = viewfield
+        self.speed = speed
 
         self.viewfield.parent = self
         self.current_strategy.parent = self
