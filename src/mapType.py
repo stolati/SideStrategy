@@ -33,7 +33,7 @@ class Squared(MapType):
             for x in range(- radius, radius + 1):
                 for y in range(- radius, radius + 1):
                     dist = hypot(x, y)
-                    if dist <= radius:
+                    if dist <= radius + 0.5:
                         elements.append(Pos(x, y))
 
             Squared._radiusElements[int(radius)] = elements

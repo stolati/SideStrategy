@@ -115,15 +115,15 @@ class StratGame(Widget):
         print(touch)
         print('button : ' + repr(touch.button))
 
-        """Blacken the cases when the mouse touch a case"""
-        with self.canvas:
-            named_colors.violet()
-            pos = self.pos2id(*touch.pos)
-            if pos is None : return
+        #"""Blacken the cases when the mouse touch a case"""
+        #with self.canvas:
+        #    named_colors.violet()
+        #    pos = self.pos2id(*touch.pos)
+        #    if pos is None : return
 
-            idx, idy = pos
-            posX, posY, sizeX, sizeY = self.id2pos(idx, idy)
-            Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
+        #    idx, idy = pos
+        #    posX, posY, sizeX, sizeY = self.id2pos(idx, idy)
+        #    Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
         #print('touch down')

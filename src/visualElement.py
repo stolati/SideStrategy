@@ -27,7 +27,7 @@ class ColorVisual(Visual):
         super(ColorVisual, self).__init__(**kargs)
         self._graphics = None
         self.color = color
-
+        self._graphicsColor = None
 
     def update(self, dt):
 
@@ -36,16 +36,26 @@ class ColorVisual(Visual):
         size = (sizeX, sizeY)
 
         if self._graphics is None:
-            self.color()
+            self._graphicColor = self.color()
             self._graphics = Rectangle(pos = pos, size = size)
         else :
             self._graphics.pos = pos
             self._graphics.size = size
 
+    def setShowable(self, showable):
+        if showable == False:
+            self.parent.playmap.canvas.remove(self._graphics)
+            self.parent.playmap.canvas.remove(self._graphicColor)
+            self._graphics = None
+            self._graphicColor = None
+
     def remove(self):
         if self._graphics != None:
-            self.parent.playmap.canvas.remove(self._graphics)
+            canvas = self.parent.playmap.canvas
+            canvas.remove(self._graphicColor)
+            canvas.remove(self._graphics)
             self._graphics = None
+            self._graphicColor = None
 
 
 class Element:

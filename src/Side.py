@@ -17,6 +17,8 @@ class Side:
         self.elements = {}
         self._map = game._map.duplicateWithFog()
 
+        self._lastVisibles = set()
+
     def updateMap(self, dt):
         #self.game._map.update(dt)
         #return
@@ -27,6 +29,7 @@ class Side:
         ourElements = list(filter(lambda e: e.side == self, listElement))
         notOurElements = list(filter(lambda e: e.side != self, listElement))
         visiblePos = set()
+        visibleElements = set(ourElements)
 
         # init the current map to fog everywhere
         for pos, e in self._map.everyElementLoop():
@@ -45,6 +48,12 @@ class Side:
         for notOurElement in notOurElements:
             if notOurElement.pos in visiblePos:
                 self._map.elements.append(notOurElement)
+                visibleElements.add(notOurElement)
+
+        for toRemoveElement in self._lastVisibles - visibleElements:
+            toRemoveElement.visual.remove()
+
+        self._lastVisibles = visibleElements
 
         self._map.update(dt)
 
