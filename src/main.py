@@ -107,6 +107,7 @@ class StratGame(Widget):
                 self._graphics.pos = (0, 0)
                 self._graphics.size = (self.width, self.height)
 
+            self._map.updateElements(dt)
             self.userSide.updateMap(dt)
             #self._map.update(dt)
 
@@ -150,7 +151,7 @@ class StratApp(App):
 
         #self._map = loadMapFromFile('map03')
 
-        mapTypeInst = random.choice([OddQ(), Squared()])
+        mapTypeInst = random.choice([OddQ()])
 
         self._map = generateMap(mapTypeInst = mapTypeInst)
 

@@ -170,6 +170,9 @@ class MotherShipStrategy(Strategy):
         self.first = True
 
     def action(self):
+
+        self.parent.pos = self.putOnFloor(self.parent.pos)
+
         self.count += 1
         if self.count % self.speed != 0: return
         #each 15 actions, pop a sibling
@@ -236,6 +239,9 @@ class DiggerStrategy(Strategy):
         # change thoses ways into digged floor
         m = self.parent.playmap._map
 
+        if not m.get(self.parent.pos).isFloor():
+            self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
+
         m.get(self.parent.pos).setAsFloor(True)
         possiblesPos = m.getAround(self.parent.pos)
 
@@ -276,9 +282,13 @@ class DiggerDirectionStrategy(Strategy):
 
 
     def action(self):
+        m = self.parent.playmap._map
+
+        if not m.get(self.parent.pos).isFloor():
+            self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
+
         if self.paths is None: self._fillPath()
 
-        m = self.parent.playmap._map
         m.get(self.parent.pos).setAsFloor(True)
 
         if not self.paths:
@@ -302,6 +312,10 @@ class DiggerFindDirectionStrategy(Strategy):
 
     def action(self):
         m = self.parent.playmap._map
+
+        if not m.get(self.parent.pos).isFloor():
+            self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
+            
         elements = list(m.findElement(lambda e: e.isFloor()))
         p, e = choice(elements)
 

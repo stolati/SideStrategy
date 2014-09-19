@@ -126,9 +126,11 @@ class StratMap:
             e.drawElement.size = size
 
 
-    def update(self, dt):
+    def updateElements(self, dt):
         for e in self.elements:
             e.current_strategy.action()
+
+    def update(self, dt):
 
         #first draw the map so it will be first
         self.drawMap()

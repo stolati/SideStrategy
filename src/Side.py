@@ -63,7 +63,7 @@ class Side:
         e = Element('mothership', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
             strategy = MotherShipStrategy(**kargs),
-            viewfield = ViewFieldBasic(),
+            viewfield = ViewFieldAroundSimple(5),
         )
         self.game._map.elements.append(e)
 
@@ -74,7 +74,7 @@ class Side:
         e = Element('walker', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
             strategy = RunOnFloorStrategy(way = way, **kargs),
-            viewfield = ViewFieldBasic(),
+            viewfield = ViewFieldGroundBlock(5),
         )
         self.game._map.elements.append(e)
 
@@ -84,7 +84,7 @@ class Side:
             #strategy = DiggerStrategy()
             #strategy = DiggerDirectionStrategy()
             strategy = DiggerFindDirectionStrategy(**kargs),
-            viewfield = ViewFieldUnderground(),
+            viewfield = ViewFieldAroundSimple(2),
         )
         self.game._map.elements.append(e)
 
@@ -92,7 +92,7 @@ class Side:
         e = Element('flyer', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
             strategy = FlyerFindDirectionStrategy(**kargs),
-            viewfield = ViewFieldBasic(),
+            viewfield = ViewFieldGroundBlock(10),
         )
         self.game._map.elements.append(e)
 
@@ -100,7 +100,7 @@ class Side:
         e = Element('missile', playmap = self.game, side = self, startPos = position,
             visual = ColorVisual(color = self.color),
             strategy = MissileStrategy(**kargs),
-            viewfield = ViewFieldBasic(),
+            viewfield = ViewFieldAroundSimple(1),
         )
         self.game._map.elements.append(e)
 
