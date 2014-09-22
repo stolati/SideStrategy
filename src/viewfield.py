@@ -2,7 +2,7 @@
 
 
 
-class ViewField:
+class ViewField(object):
 	
 	def __init__(self, radius = None):
 		self.parent = None

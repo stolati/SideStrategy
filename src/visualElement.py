@@ -12,7 +12,7 @@ from utils import *
 from stratmap import *
 from visualElement import *
 
-class Visual:
+class Visual(object):
     def __init__(self, parent = None):
         self.parent = parent
 
@@ -58,7 +58,7 @@ class ColorVisual(Visual):
             self._graphicColor = None
 
 
-class Element:
+class Element(object):
 
     def __init__(self, category, playmap, startPos, visual, strategy, side, viewfield, speed):
 

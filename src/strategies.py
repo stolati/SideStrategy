@@ -7,7 +7,7 @@ from visualElement import *
 
 
 
-class Strategy:
+class Strategy(object):
     """Strategy interface class"""
     def __init__(self, parent = None, side = None):
         self.parent, self.side = parent, side
@@ -96,7 +96,7 @@ class Strategy:
         return res
 
 
-class Speed():
+class Speed(object):
 
     def __init__(self, speed = 1):
         self.speed = speed #1 mean everytimes, more means waiting

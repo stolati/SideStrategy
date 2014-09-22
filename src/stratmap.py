@@ -13,7 +13,7 @@ import math
 import os, os.path, sys
 from pprint import pprint
 
-class MapElement:
+class MapElement(object):
     def __init__(self):
         self.drawElement = None
         self.colorElement = None
@@ -49,7 +49,7 @@ class MapElement:
         return self
 
 
-class StratMap:
+class StratMap(object):
 
     def __init__(self, size = (40, 20), mapTypeInst = mapType.Squared(), playmap = None):
         self.playmap = playmap

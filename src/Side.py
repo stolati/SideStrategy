@@ -10,7 +10,7 @@ from stratmap import *
 from viewfield import *
 
 
-class Side:
+class Side(object):
 
     def __init__(self, color, game):
         self.color = color

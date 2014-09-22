@@ -5,6 +5,8 @@ import sys
 import random
 from pprint import pprint
 
+#import cProfile
+
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
 # http://www.redblobgames.com/grids/hexagons/  => hexagon code
 # http://www.hexographer.com/ => hexagon map creation
@@ -163,4 +165,5 @@ class StratApp(App):
 
 
 if __name__ == '__main__':
+    #cProfile.run('StratApp().run()')
     StratApp().run()

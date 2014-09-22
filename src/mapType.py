@@ -7,7 +7,7 @@ from math import hypot
 # This file is referency maps with there own algorythms
 # Most of the algo come from http://www.redblobgames.com/grids/hexagons/#rings 
 
-class MapType:
+class MapType(object):
 
     def getAround(self, pos): return self.getRadius(pos, 1)
     def pixel2pos(self, pixelPos, sizeCellWidth, sizeCellHeight): raise NotImplemented()

@@ -26,7 +26,7 @@ class Pos(namedtuple('Pos', 'x y')):
         return Pos(self.x, self.y + y)
 
 
-class NamedColor:
+class NamedColor(object):
 
 	def __init__(self, r, g, b, t = 1):
 		self.r, self.g, self.b, self.t = r, g, b, t
@@ -35,7 +35,7 @@ class NamedColor:
 	def __call__(self):
 		return Color(self.r, self.g, self.b, self.t)
 
-class NamedColors:
+class NamedColors(object):
     colors = {
         'red':(1,0,0),
         'green':(0,1,0),
