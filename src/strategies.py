@@ -210,6 +210,9 @@ class RunOnFloorStrategy(Strategy):
     def __init__(self, way, *args, **kargs):
         super(RunOnFloorStrategy, self).__init__(*args, **kargs)
         """way can be 'left' or 'right'"""
+        if way is 'choose':
+            way = random.choice(['left', 'right'])
+
         self.way = way
         if way == 'left': self.way = -1
         if way == 'right': self.way = 1

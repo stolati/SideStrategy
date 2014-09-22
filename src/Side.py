@@ -1,4 +1,6 @@
 import random
+from functools import partial
+
 
 # Side is a player
 # It can be a real player, a distant one, an IA, a neutral one, etc ...
@@ -8,6 +10,37 @@ from strategies import *
 from utils import *
 from stratmap import *
 from viewfield import *
+
+
+
+conf = {
+    'mothership':{
+        'strategy': partial(MotherShipStrategy),
+        'viewfield': partial(ViewFieldAroundSimple, 5),
+        'speed': partial(Speed, None),
+    },
+    'walker':{
+        'strategy': partial(RunOnFloorStrategy, way = 'choose'),
+        'viewfield': partial(ViewFieldGroundBlock, 5),
+        'speed': partial(Speed, 3),
+    },
+    'digger':{
+        'strategy': partial(DiggerFindDirectionStrategy),
+        'viewfield': partial(ViewFieldAroundSimple, 2),
+        'speed': partial(Speed, 5),
+    },
+    'flyer':{
+        'strategy': partial(FlyerFindDirectionStrategy),
+        'viewfield': partial(ViewFieldGroundBlock, 10),
+        'speed': partial(Speed, 1),
+    },
+    'missile':{
+        'strategy': partial(MissileStrategy),
+        'viewfield': partial(ViewFieldAroundSimple, 1),
+        'speed': partial(Speed, -3),
+    },
+}
+
 
 
 class Side(object):
@@ -59,55 +92,21 @@ class Side(object):
         self._map.update(dt)
 
 
-    def createMotherShip(self, position, **kargs):
-        e = Element('mothership', playmap = self.game, side = self, startPos = position,
-            visual = ColorVisual(color = self.color),
-            strategy = MotherShipStrategy(**kargs),
-            viewfield = ViewFieldAroundSimple(5),
-            speed = Speed(None),
-        )
-        self.game._map.elements.append(e)
+    def __getattr__(self, name):
+        if not name.startswith('create'):
+            raise AttributeError("%s object has no attribute '%'\n" % (repr(self), name))
+        goalName = name[len('create'):].lower()
+        goalElem = conf[goalName] 
 
-    def createWalker(self, position, **kargs):
-
-        way = random.choice(['left', 'right'])
-
-        e = Element('walker', playmap = self.game, side = self, startPos = position,
-            visual = ColorVisual(color = self.color),
-            strategy = RunOnFloorStrategy(way = way, **kargs),
-            viewfield = ViewFieldGroundBlock(5),
-            speed = Speed(3),
-        )
-        self.game._map.elements.append(e)
-
-    def createDigger(self, position, **kargs):
-        e = Element('digger', playmap = self.game, side = self, startPos = position,
-            visual = ColorVisual(color = self.color),
-            #strategy = DiggerStrategy()
-            #strategy = DiggerDirectionStrategy()
-            strategy = DiggerFindDirectionStrategy(**kargs),
-            viewfield = ViewFieldAroundSimple(2),
-            speed = Speed(5),
-        )
-        self.game._map.elements.append(e)
-
-    def createFlyer(self, position, **kargs):
-        e = Element('flyer', playmap = self.game, side = self, startPos = position,
-            visual = ColorVisual(color = self.color),
-            strategy = FlyerFindDirectionStrategy(**kargs),
-            viewfield = ViewFieldGroundBlock(10),
-            speed = Speed(1),
-        )
-        self.game._map.elements.append(e)
-
-    def createMissile(self, position, **kargs):
-        e = Element('missile', playmap = self.game, side = self, startPos = position,
-            visual = ColorVisual(color = self.color),
-            strategy = MissileStrategy(**kargs),
-            viewfield = ViewFieldAroundSimple(1),
-            speed = Speed(-3),
-        )
-        self.game._map.elements.append(e)
+        def generatorFct(position, **kargs):
+            e = Element(goalName, playmap = self.game, side = self, startPos = position,
+                visual = ColorVisual(color = self.color),
+                strategy = goalElem['strategy'](**kargs),
+                viewfield = goalElem['viewfield'](),
+                speed = goalElem['speed'](),
+            )
+            self.game._map.elements.append(e)
+        return generatorFct
 
 
     def command_touch(self, pos):
