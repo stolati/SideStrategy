@@ -14,7 +14,12 @@ import os, os.path, sys
 from pprint import pprint
 
 class MapElement(object):
-    def __init__(self):
+
+    _floor = 'floor'
+    _air = 'air'
+    _unknown = 'unknown'
+
+    def __init__(self, my_map, my_pos):
         self.drawElement = None
         self.colorElement = None
         self.type = 'unknown'
@@ -22,29 +27,44 @@ class MapElement(object):
         self.borders = []
         self.in_fog = True
 
-    def applyType(self, otherElement):
-        otherElement.type = self.type
-        otherElement.metadata = self.metadata
+        self.my_map = my_map
+        self.pos = my_pos
 
-    def isFloor(self): return self.type == 'floor'
+    def applyFrom(self, otherElement):
+        if otherElement.type is not self.type or otherElement.metadata != self.metadata:
+            self.my_map._changedElement(self)
+
+        self.type = otherElement.type
+        self.metadata = otherElement.metadata
+
+    def isFloor(self): return self.type is MapElement._floor
     def setAsFloor(self, isDigged = False):
-        self.type, self.metadata = 'floor', isDigged
+        if self.type is not MapElement._floor or self.metadata != isDigged:
+            self.my_map._changedElement(self)
+        self.type, self.metadata = MapElement._floor, isDigged
         return self
 
-    def isDiggedFloor(self): return self.type == 'floor' and self.metadata
+    def isDiggedFloor(self): return self.type is MapElement._floor and self.metadata
 
-    def isAir(self): return self.type == 'air'
+    def isAir(self): return self.type is MapElement._air
     def setAsAir(self):
-        self.type = 'air'
+        if self.type is not MapElement._air:
+            self.my_map._changedElement(self)
+        self.type = MapElement._air
         return self
 
-    def isUnknown(self): return self.type == 'unknown'
+    def isUnknown(self): return self.type is MapElement._unknown
     def setAsUnknown(self):
-        self.type = 'unknown'
+        if self.type is not MapElement._unknown:
+            self.my_map._changedElement(self)
+        self.type = MapElement._unknown
+        self.map._changedElement(self)
         return self
 
     def isInFog(self): return self.in_fog
     def setIsInFog(self, in_fog = True):
+        if self.in_fog != in_fog:
+            self.my_map._changedElement(self)
         self.in_fog = in_fog
         return self
 
@@ -54,10 +74,16 @@ class StratMap(object):
     def __init__(self, size = (40, 20), mapTypeInst = mapType.Squared(), playmap = None):
         self.playmap = playmap
         self.size = Pos(*size)
-        self._map = [[MapElement() for y in range(size[1])] for x in range(size[0])]
+        self._map = [[MapElement(self, Pos(x, y)) for y in range(size[1])] for x in range(size[0])]
         self.elements = []
         self.starts = [] # pos of starts
         self.mapTypeInst = mapTypeInst
+
+        # the first time, draw everythings (slow, but keep the layers in their level)
+        self.modifiedElements = map(lambda e: e[1], self.everyElementLoop())
+
+    def _changedElement(self, elem):
+        self.modifiedElements.append(elem)
 
     def duplicateWithFog(self):
         return StratMap(size = self.size, mapTypeInst = self.mapTypeInst, playmap = self.playmap)
@@ -80,17 +106,16 @@ class StratMap(object):
     def set(self, pos, v):
         self._map[pos.x][pos.y] = v
 
-    def drawMapPreparation(self):
-        if self._preparation_done: return
-        posX, posY, sizeX, sizeY = self.playmap.id2pos(x, y)
-        size = Pos(sizeX, sizeY)
-
-        for pos, e in self.everyElementLoop():
-            pass 
-
     def drawMap(self):
-        for pos, e in self.everyElementLoop():
+
+        for e in self.modifiedElements:
+            pos = e.pos
             self.drawCell(pos, e)
+
+        self.modifiedElements = []
+
+        #for pos, e in self.everyElementLoop():
+        #    self.drawCell(pos, e)
 
     def drawCell(self, pos, e):
         posX, posY, sizeX, sizeY = self.playmap.id2pos(pos.x, pos.y)

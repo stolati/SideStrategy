@@ -102,7 +102,7 @@ class Speed(object):
         self.speed = speed #1 mean everytimes, more means waiting
         self.count = 0
 
-    def moveStep():
+    def moveStep(self):
         if self.speed is None: return 0 #None as speed mean immobile
         if self.speed < 0: return -self.speed # minus 0 mean multiples times per ticks
         if self.speed == 0: return 1
@@ -115,68 +115,8 @@ class Speed(object):
         return 0
 
 
-class DoNothing(Strategy):
+class DoNothingStrategy(Strategy):
     def action(self): pass
-
-
-class GoEastStrategy(Strategy):
-
-    def action(self):
-        maxX = self.parent.playmap.cellx
-
-        pos = self.parent.pos + Pos(1, 0)
-        if pos.x >= maxX: pos = Pos(0, pos.y) 
-        self.parent.pos = pos
-
-
-class RandomStrategy(Strategy):
-
-    def action(self):
-        maxX = self.parent.playmap.cellx
-        maxY = self.parent.playmap.celly
-
-        self.parent.pos = Pos(randint(0, maxX), randint(0, maxY))
-
-class BounceStrategy(Strategy):
-
-    def __init__(self, parent, initspeed = Pos(1, 1)):
-        super(BounceStrategy, self).__init__(parent)
-        self.speed = initspeed
-
-    def action(self):
-        maxX = self.parent.playmap.cellx
-        maxY = self.parent.playmap.celly
-
-        oldPos = self.parent.pos
-        newPos = self.parent.pos + self.speed
-
-        if newPos.x < 0 or newPos.x >= maxX:
-            self.speed = Pos(-self.speed.x, self.speed.y)
-            newPos = self.parent.pos + self.speed
-
-        if newPos.y < 0 or newPos.y >= maxY:
-            self.speed = Pos(self.speed.x, -self.speed.y)
-            newPos = self.parent.pos + self.speed
-
-        if self.parent.playmap._map.get(newPos).isFloor():
-            self.speed = Pos(-self.speed.x, -self.speed.y)
-            newPos = self.parent.pos + self.speed
-
-        self.parent.pos = newPos
-
-
-class PoopFloorStrategy(GoEastStrategy):
-    """Poop floor element and jump on the top floor"""
-
-    def action(self):
-        #put poop on the last place we have been on
-        self.parent.playmap._map.get(self.parent.pos).setAsFloor()
-
-        super(PoopFloorStrategy, self).action()
-
-        #try to jump on the top poop part
-        while self.parent.playmap._map.get(self.parent.pos).isFloor():
-            self.parent.pos = self.parent.pos + Pos(0, 1)
 
 
 class MotherShipStrategy(Strategy):
@@ -185,24 +125,23 @@ class MotherShipStrategy(Strategy):
         super(MotherShipStrategy, self).__init__(*args, **kargs)
         self.count = 0
         self.life = 10
-        self.speed = speed
+        self.speed = Speed(speed)
         self.first = True
 
     def action(self):
 
         self.parent.pos = self.putOnFloor(self.parent.pos)
 
-        self.count += 1
-        if self.count % self.speed != 0: return
-        #each 15 actions, pop a sibling
+        for i in range(self.speed.moveStep()):
+            #each 15 actions, pop a sibling
 
-        if self.first:
-            self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
-            self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
-        else :
-            self.parent.side.createWalker(self.parent.pos)
+            if self.first:
+                self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
+                self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
+            else :
+                self.parent.side.createWalker(self.parent.pos)
 
-        self.first = False
+            self.first = False
 
 
 class RunOnFloorStrategy(Strategy):
@@ -219,15 +158,23 @@ class RunOnFloorStrategy(Strategy):
 
         self.count = 0
 
-    def action(self):
-        self.count += 1
-        if self.count % 2 != 0: return
+    def move(self):
 
         self.way, pos = self.advanceOneStepAndBounce(self.way, self.parent.pos)
         pos = self.putOnFloor(pos)
-        if pos is None: return
-
+        if pos is None: return # in case of missing floo<p></p>r
         self.parent.pos = pos
+
+
+    def action(self):
+        for i in range(self.parent.speed.moveStep()):
+            self.move()
+
+        pos = self.parent.pos
+        if self.parent.pos is None:
+            # in case of missing floor
+            e.deleteMe()
+            return
 
         #hack for now, get current color
         selfCol = self.parent.visual.color
@@ -252,39 +199,9 @@ class RunOnFloorStrategy(Strategy):
         #if encounter the mothership
 
 
-class DiggerStrategy(Strategy):
-    """ Go around in a random fashion
-    Choosing first non-digged floor then digged floor"""
-
-    def action(self):
-        # try to go one of 6 ways
-        # change thoses ways into digged floor
-        m = self.parent.playmap._map
-
-        if not m.get(self.parent.pos).isFloor():
-            self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
-
-        m.get(self.parent.pos).setAsFloor(True)
-        possiblesPos = m.getAround(self.parent.pos)
-
-        # filter the floors on possiblePos
-        around_floor = list(filter(lambda p: m.get(p).isFloor(), possiblesPos))
-
-        around_floor_digged = filter(lambda p: m.get(p).isDiggedFloor(), around_floor)
-        around_floor_undigged = filter(lambda p: not m.get(p).isDiggedFloor(), around_floor)
-        around_floor_undigged = list(around_floor_undigged)
-
-        if len(around_floor_undigged) != 0:
-            nextpos = choice(around_floor_undigged)
-        else:
-            around_floor_digged = list(around_floor_digged)
-            nextpos = choice(around_floor_digged)
-
-        #nextpos = possiblesPosFloor[0]
-        self.parent.pos = nextpos
-
 
 class DiggerDirectionStrategy(Strategy):
+    """Given a direction path, go throught that"""
 
     def __init__(self, direction, *args, **kargs):
         super(DiggerDirectionStrategy, self).__init__(*args, **kargs)
@@ -303,7 +220,7 @@ class DiggerDirectionStrategy(Strategy):
         self.paths = self.shortestPath(isGood, self.direction)
 
 
-    def action(self):
+    def move(self):
         m = self.parent.playmap._map
 
         if not m.get(self.parent.pos).isFloor():
@@ -328,6 +245,10 @@ class DiggerDirectionStrategy(Strategy):
         self.parent.pos = nextOne
         if self.parent.pos == self.direction:
             self.parent.endStrategy()
+
+    def action(self):
+        for i in range(self.parent.speed.moveStep()):
+            self.move()
 
 
 class DiggerFindDirectionStrategy(Strategy):
@@ -362,7 +283,7 @@ class FlyerDirectionStrategy(Strategy):
         self.paths = self.shortestPath(isGood, self.direction)
 
 
-    def action(self):
+    def move(self):
         if self.paths is None: self._fillPath()
 
         m = self.parent.playmap._map
@@ -382,6 +303,11 @@ class FlyerDirectionStrategy(Strategy):
         self.parent.pos = nextOne
         if self.parent.pos == self.direction:
             self.parent.endStrategy()
+
+    def action(self):
+        for i in range(self.parent.speed.moveStep()):
+            self.move()
+
 
 class FlyerFindDirectionStrategy(Strategy):
 
@@ -417,7 +343,7 @@ class MissileStrategy(Strategy):
         # find also 
 
 
-    def step(self):
+    def move(self):
         m = self.parent.playmap._map
 
         self.parent.pos += Pos(0, -1)
@@ -430,8 +356,6 @@ class MissileStrategy(Strategy):
 
 
     def action(self):
-
-        # a missile is way faster (2 times for now)
-        self.step()
-        self.step()
+        for i in range(self.parent.speed.moveStep()):
+            self.move()
 
