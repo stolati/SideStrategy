@@ -12,7 +12,6 @@ from stratmap import *
 from viewfield import *
 
 
-
 conf = {
     'mothership':{
         'strategy': partial(MotherShipStrategy),
@@ -52,22 +51,24 @@ class Side(object):
         self._map = game._map.duplicateWithFog()
 
         self._lastVisibles = set()
+        self._lastNotFog = set()
 
     def updateMap(self, dt):
         #self.game._map.update(dt)
         #return
 
-        listElement = list(self.game._map.elements)
-
         # get elements from ourselves
-        ourElements = list(filter(lambda e: e.side == self, listElement))
-        notOurElements = list(filter(lambda e: e.side != self, listElement))
-        visiblePos = set()
-        visibleElements = set(ourElements)
+        ourElements, notOurElements = list(), list()
+        for e in self.game._map.elements:
+            if e.side == self: ourElements.append(e)
+            else: notOurElements.append(e)
 
-        # init the current map to fog everywhere
-        for pos, e in self._map.everyElementLoop():
-            e.setIsInFog()
+        visiblePos = set()
+        visibleElements = set()
+
+        ## init the current map to fog everywhere
+        for pos in self._lastNotFog:
+            self._map.get(pos).setIsInFog()
 
         for curOurElem in ourElements:
             for pos in curOurElem.viewfield.getViewPos():
@@ -75,10 +76,10 @@ class Side(object):
 
         for pos in visiblePos:
             curElem = self._map.get(pos)
-            self.game._map.get(pos).applyType(curElem)
+            curElem.applyFrom(self.game._map.get(pos))
             curElem.setIsInFog(False)
 
-        self._map.elements = ourElements
+        self._map.elements = list(ourElements)
         for notOurElement in notOurElements:
             if notOurElement.pos in visiblePos:
                 self._map.elements.append(notOurElement)
@@ -88,6 +89,7 @@ class Side(object):
             toRemoveElement.visual.remove()
 
         self._lastVisibles = visibleElements
+        self._lastNotFog = visiblePos
 
         self._map.update(dt)
 

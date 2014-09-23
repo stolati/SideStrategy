@@ -43,9 +43,53 @@ from visualElement import *
 from Side import *
 from mapType import *
 
-visual_marge = 0.01
+
+class FPSCalculatorSimple(object):
+
+    def __init__(self, responseEvery = 10):
+        self.currentResults = []
+        self.responseEvery = responseEvery
+
+    def addValue(self, dt):
+        self.currentResults.append(dt)
+
+    def haveToCalculate(self):
+        return len(self.currentResults) >= self.responseEvery
+
+    def calculate(self):
+        sumTot = 0
+        for v in self.currentResults:
+            sumTot += v
+        res = sumTot / len(self.currentResults)
+        self.currentResults = []
+        return res
+
+
+class FPSCalculatorBetter(object):
+
+    def __init__(self, responseEverySeconds = 1):
+        self.currentSum = 0
+        self.totalResponse = 0
+        self.responseEverySeconds = responseEverySeconds
+
+    def addValue(self, dt):
+        self.totalResponse += 1
+        self.currentSum += dt
+
+    def haveToCalculate(self):
+        return self.currentSum >= self.responseEverySeconds
+
+    def calculate(self):
+        res = self.totalResponse / self.currentSum
+        self.currentSum = 0
+        self.totalResponse = 0
+        return res
+
+
 
 class StratGame(Widget):
+
+    visual_marge = 0.01
 
     def __init__(self, stratMap, mapTypeInst, **kargs):
         super(StratGame, self).__init__(**kargs)
@@ -65,11 +109,12 @@ class StratGame(Widget):
 
         self.userSide = userSide
         self.computerSide = computerSide
+        self.fps = FPSCalculatorBetter()
 
 
     def id2pos(self, x, y):
         """left 10 percent on each side"""
-        hMarge, wMarge = self.height * visual_marge, self.width * visual_marge
+        hMarge, wMarge = self.height * StratGame.visual_marge, self.width * StratGame.visual_marge
 
         quantumy = (self.height - (2 * hMarge)) / self.celly
         quantumx = (self.width - (2 * wMarge)) / self.cellx
@@ -82,7 +127,7 @@ class StratGame(Widget):
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
 
-        hMarge, wMarge = self.height * visual_marge, self.width * visual_marge
+        hMarge, wMarge = self.height * StratGame.visual_marge, self.width * StratGame.visual_marge
 
         quantumy = (self.height - (2 * hMarge)) / self.celly
         quantumx = (self.width - (2 * wMarge)) / self.cellx
@@ -99,6 +144,13 @@ class StratGame(Widget):
                     Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def update(self, dt):
+
+        self.fps.addValue(dt)
+        if self.fps.haveToCalculate():
+            print('fps : ' + str(self.fps.calculate()))
+            pass
+
+
         # (len(self.canvas.get_group(None)))
         with self.canvas:
 
@@ -129,6 +181,7 @@ class StratGame(Widget):
         #    Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
+        print('touch down')
         #print('touch down')
         #print(touch.x)
         #print(touch.y)
@@ -159,8 +212,8 @@ class StratApp(App):
 
         self._game = StratGame(self._map, mapTypeInst)
 
-        #Clock.schedule_interval(self._game.update, 1.0/60.0)
-        Clock.schedule_interval(self._game.update, 1.0/15.0)
+        Clock.schedule_interval(self._game.update, 1.0/60.0)
+        #Clock.schedule_interval(self._game.update, 1.0/15.0)
         return self._game
 
 
