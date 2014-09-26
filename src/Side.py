@@ -22,17 +22,19 @@ conf = {
         'strategy': partial(RunOnFloorStrategy, way = 'choose'),
         'viewfield': partial(ViewFieldGroundBlock, 5),
         'speed': partial(Speed, 3),
+        'visual': partial(ColorWalker),
     },
     'digger':{
         'strategy': partial(DiggerFindDirectionStrategy),
         'viewfield': partial(ViewFieldAroundSimple, 2),
-        'speed': partial(Speed, 50),
+        'speed': partial(Speed, 5),
         'visual': partial(ColorDigger),
     },
     'flyer':{
         'strategy': partial(FlyerFindDirectionStrategy),
         'viewfield': partial(ViewFieldGroundBlock, 10),
         'speed': partial(Speed, 1),
+        'visual': partial(ColorFlyer),
     },
     'missile':{
         'strategy': partial(MissileStrategy),
@@ -86,8 +88,8 @@ class Side(object):
                 self._map.elements.append(notOurElement)
                 visibleElements.add(notOurElement)
 
-        for toRemoveElement in self._lastVisibles - visibleElements:
-            toRemoveElement.visual.remove()
+        #for toRemoveElement in self._lastVisibles - visibleElements:
+        #    toRemoveElement.visual.remove()
 
         self._lastVisibles = visibleElements
         self._lastNotFog = visiblePos

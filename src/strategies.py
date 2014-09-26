@@ -138,10 +138,10 @@ class MotherShipStrategy(Strategy):
 
             if self.first:
                 self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
-                #self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
+                self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
             else :
-                if self.qteWalker < 10:
-                    #self.parent.side.createWalker(self.parent.pos)
+                if self.qteWalker < 5:
+                    self.parent.side.createWalker(self.parent.pos)
                     self.qteWalker += 1
 
             self.first = False

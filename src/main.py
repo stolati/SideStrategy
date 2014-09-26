@@ -209,12 +209,12 @@ class StratApp(App):
 
         mapTypeInst = random.choice([Squared()])
 
-        self._map = generateMap(mapTypeInst = mapTypeInst, size = Pos(50, 25))
+        self._map = generateMap(mapTypeInst = mapTypeInst) #, size = Pos(50, 25))
 
         self._game = StratGame(self._map, mapTypeInst)
 
-        Clock.schedule_interval(self._game.update, 1.0/60.0)
-        #Clock.schedule_interval(self._game.update, 1.0/15.0)
+        #Clock.schedule_interval(self._game.update, 1.0/60.0)
+        Clock.schedule_interval(self._game.update, 1.0/15.0)
         return self._game
 
 

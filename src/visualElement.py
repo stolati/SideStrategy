@@ -18,6 +18,9 @@ from visualElement import *
 
 from random import choice
 
+cell_max_size = (255, 255)
+
+
 class Visual(object):
     def __init__(self, parent = None):
         self.parent = parent
@@ -70,21 +73,44 @@ class ColorVisual(Visual):
 
 class ColorDigger(ColorVisual):
 
-    max_size = (256, 256)
-
     def __init__(self, **kargs):
         super(ColorDigger, self).__init__(**kargs)
         self.texture_handler = DiggerTexture()
-        self.fbo = Fbo(size=ColorDigger.max_size)
+        self.fbo = Fbo(size=cell_max_size)
 
     def update(self, dt, direction, **kargs):
 
         # update the fbo texture
-        #self.fbo.clear()
+        self.fbo.clear()
         with self.fbo:
             self.color()
             Rectangle(texture = self.texture_handler.getRightTexture(direction),
-                pos = (0, 0), size = ColorDigger.max_size)
+                pos = (0, 0), size = cell_max_size)
+
+        size, pos = self._getSizeAndPos()
+
+        if self._graphics is None:
+            self._graphics = Rectangle(texture = self.fbo.texture, pos = pos, size = size)
+        else :
+            self._graphics.pos = pos
+            self._graphics.size = size
+
+
+class ColorFlyer(ColorVisual):
+
+    def __init__(self, **kargs):
+        super(ColorFlyer, self).__init__(**kargs)
+        self.texture_handler = FlyerTexture()
+        self.fbo = Fbo(size=cell_max_size)
+
+    def update(self, dt, direction, **kargs):
+
+        # update the fbo texture
+        self.fbo.clear()
+        with self.fbo:
+            self.color()
+            Rectangle(texture = self.texture_handler.getRightTexture(direction),
+                pos = (0, 0), size = cell_max_size)
 
         size, pos = self._getSizeAndPos()
 
@@ -96,11 +122,32 @@ class ColorDigger(ColorVisual):
 
 
 
-    #def update(self, dt, direction, **kargs):
-    #    print('updating digger') 
-    #    super(ColorDigger, self).update(dt, **kargs)
+class ColorWalker(ColorVisual):
 
-    #    self._graphics.source = self.texture_handler.getRightTexture(direction)
+    def __init__(self, **kargs):
+        super(ColorWalker, self).__init__(**kargs)
+        self.texture_handler_walking = WalkerWalkingTexture()
+        #self.texture_handler_climbing = FlyerTexture()
+        #self.texture_handler_jumping = FlyerTexture()
+        self.fbo = Fbo(size=cell_max_size)
+
+    def update(self, dt, direction, **kargs):
+
+        # update the fbo texture
+        self.fbo.clear()
+        with self.fbo:
+            self.color()
+            Rectangle(texture = self.texture_handler_walking.getRightTexture(direction),
+                pos = (0, 0), size = cell_max_size)
+
+        size, pos = self._getSizeAndPos()
+
+        if self._graphics is None:
+            self._graphics = Rectangle(texture = self.fbo.texture, pos = pos, size = size)
+        else :
+            self._graphics.pos = pos
+            self._graphics.size = size
+
 
 
 class Element(object):
@@ -160,26 +207,49 @@ def singleton(cls):
     return getinstance
 
 
+
+
 @singleton #singleton so we load once
 class DiggerTexture(object):
 
     def __init__(self):
-        self.right = Image('doodleDigger_right.png').texture
-        self.up = Image('doodleDigger_up.png').texture
-        self.left = Image('doodleDigger_left.png').texture
-        self.down = Image('doodleDigger_down.png').texture
+        self.textures = {
+            Pos.right : Image('doodleDigger_right.png').texture,
+            Pos.up : Image('doodleDigger_up.png').texture,
+            Pos.left : Image('doodleDigger_left.png').texture,
+            Pos.down : Image('doodleDigger_down.png').texture,
+        }
 
     def getRightTexture(self, pos):
-        if pos == Pos(+1, 0):
-            return self.right
-        if pos == Pos(-1, 0):
-            return self.left
-        if pos == Pos(0, +1):
-            return self.up
-        if pos == Pos(0, -1):
-            return self.down
-        print(pos)
-        return self.left
+        return self.textures.get(pos, self.textures[Pos.down])
+
+
+@singleton
+class FlyerTexture(object):
+
+    def __init__(self):
+        self.textures = {
+            Pos.right : Image('doodleFlyer_right.png').texture,
+            Pos.up : Image('doodleFlyer_up.png').texture,
+            Pos.left : Image('doodleFlyer_left.png').texture,
+            Pos.down : Image('doodleFlyer_down.png').texture,
+        }
+
+    def getRightTexture(self, pos):
+        return self.textures.get(pos, self.textures[Pos.up])
+
+
+@singleton
+class WalkerWalkingTexture(object):
+
+    def __init__(self):
+        self.textures = {
+            Pos.right : Image('doodleWalkerWalking_right.png').texture,
+            Pos.left : Image('doodleWalkerWalking_left.png').texture,
+        }
+
+    def getRightTexture(self, pos):
+        return self.textures.get(pos, self.textures[Pos.left])
 
 
 # file names : 

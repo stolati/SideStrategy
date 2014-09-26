@@ -7,6 +7,11 @@ from collections import namedtuple
 class Pos(namedtuple('Pos', 'x y')):
     """Immutable position as named tuple"""
 
+    right = None
+    left  = None
+    up    = None
+    down  = None
+
     def __add__(self, other):
         return Pos(self.x + other.x, self.y + other.y)
 
@@ -24,6 +29,12 @@ class Pos(namedtuple('Pos', 'x y')):
 
     def addY(self, y):
         return Pos(self.x, self.y + y)
+
+
+Pos.right = Pos(+1, 0)
+Pos.left  = Pos(-1, 0)
+Pos.up    = Pos(0, +1)
+Pos.down  = Pos(0, -1)
 
 
 class NamedColor(object):
