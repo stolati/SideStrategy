@@ -48,6 +48,9 @@ from Side import *
 from mapType import *
 
 
+nb_element_on_screen = Pos(20, 20)
+
+
 class FPSCalculatorSimple(object):
 
     def __init__(self, responseEvery = 10):
@@ -90,6 +93,8 @@ class FPSCalculatorBetter(object):
         return res
 
 
+
+
 class ScatterPlaneStrat(ScatterPlane):
     """Same as scatter, but the touch modifications are differents"""
     pass
@@ -121,30 +126,34 @@ class StratGame(Widget):
         self.computerSide = computerSide
         self.fps = FPSCalculatorBetter()
 
+    def getQuanta(self):
+        quantumx = self.parent.width / nb_element_on_screen.x
+        quantumy = self.parent.height / nb_element_on_screen.y
+
+        return Pos(quantumx, quantumy)
+
+
     def id2pos(self, x, y):
         """left 10 percent on each side"""
-        hMarge, wMarge = self.height * StratGame.visual_marge, self.width * StratGame.visual_marge
-
-        quantumy = (self.height - (2 * hMarge)) / self.celly
-        quantumx = (self.width - (2 * wMarge)) / self.cellx
+        quantumx, quantumy = self.getQuanta()
 
         xres, yres = self.mapTypeInst.pos2pixel(Pos(x, y), quantumx, quantumy)
 
-        return (xres + hMarge, yres + wMarge, quantumx, quantumy)
+        return (xres, yres, quantumx, quantumy)
 
 
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
 
-        hMarge, wMarge = self.height * StratGame.visual_marge, self.width * StratGame.visual_marge
+        quantumx, quantumy = self.getQuanta()
 
-        quantumy = (self.height - (2 * hMarge)) / self.celly
-        quantumx = (self.width - (2 * wMarge)) / self.cellx
-
-        pos = Pos(x - hMarge, y - wMarge)
+        pos = Pos(x, y)
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
 
     def update(self, dt):
+
+        sizeX = self.parent.height // nb_element_on_screen.x
+        sizeY = self.parent.height // nb_element_on_screen.y
 
         self.fps.addValue(dt)
         if self.fps.haveToCalculate():
@@ -242,11 +251,14 @@ class StratApp(App):
         self._game = StratGame(self._map, mapTypeInst)
 
         xsize, ysize = self._map.size
-        self._game.height = ysize * 64
-        self._game.width = xsize * 64
+        #self._game.height = ysize * 64
+        #self._game.width = xsize * 64
 
         self._scatter = ScatterPlaneStrat()
         self._scatter.add_widget(self._game)
+
+        self._scatter.do_rotation = False
+        #self._scatter.do_scale = False
 
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         #Clock.schedule_interval(self._game.update, 1.0/15.0)

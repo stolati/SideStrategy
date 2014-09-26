@@ -169,6 +169,8 @@ class RunOnFloorStrategy(Strategy):
         nextPos = self.parent.pos + self.way
         if not m.isValid(nextPos):
             self.way = -self.way # turn around
+            if not m.isValid(self.parent.pos + self.way):
+                return
             return self.move()
 
         #try climbing
@@ -189,7 +191,7 @@ class RunOnFloorStrategy(Strategy):
         underfootPos = self.parent.pos + Pos.down
         if not m.isValid(underfootPos):
             self.parent.deleteMe()
-            return None
+            return
 
         underfootElem = m.get(underfootPos)
 
