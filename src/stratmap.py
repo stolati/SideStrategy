@@ -68,6 +68,11 @@ class MapElement(object):
         self.in_fog = in_fog
         return self
 
+    def __repr__(self):
+        return self.__str__(self)
+
+    def __str__(self):
+        return '<MapElement type="%s" />' % (self.type,)
 
 class StratMap(object):
 

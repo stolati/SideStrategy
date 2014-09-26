@@ -209,7 +209,7 @@ class StratApp(App):
 
         mapTypeInst = random.choice([Squared()])
 
-        self._map = generateMap(mapTypeInst = mapTypeInst) #, size = Pos(50, 25))
+        self._map = generateMap(mapTypeInst = mapTypeInst, size = Pos(50, 25))
 
         self._game = StratGame(self._map, mapTypeInst)
 

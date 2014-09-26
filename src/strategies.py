@@ -3,9 +3,6 @@ from random import random, randint, choice
 from pprint import pprint
 
 from utils import *
-from visualElement import *
-
-
 
 class Strategy(object):
     """Strategy interface class"""
@@ -140,7 +137,7 @@ class MotherShipStrategy(Strategy):
                 self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
                 self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
             else :
-                if self.qteWalker < 5:
+                if self.qteWalker < 1:
                     self.parent.side.createWalker(self.parent.pos)
                     self.qteWalker += 1
 
@@ -149,24 +146,63 @@ class MotherShipStrategy(Strategy):
 
 class RunOnFloorStrategy(Strategy):
 
+    _status_walking = 'walking'
+    _status_climbing = 'climbing'
+    _status_jumping = 'jumping' 
+
     def __init__(self, way, *args, **kargs):
         super(RunOnFloorStrategy, self).__init__(*args, **kargs)
         """way can be 'left' or 'right'"""
         if way is 'choose':
-            way = random.choice(['left', 'right'])
+            way = choice(['left', 'right'])
 
-        self.way = way
-        if way == 'left': self.way = -1
-        if way == 'right': self.way = 1
+        self.way = Pos.left
+        if way == 'left': self.way = Pos.left
+        if way == 'right': self.way = Pos.right
 
         self.count = 0
+        self.status = RunOnFloorStrategy._status_walking
 
     def move(self):
+        m = self.parent.playmap._map
 
-        self.way, pos = self.advanceOneStepAndBounce(self.way, self.parent.pos)
-        pos = self.putOnFloor(pos)
-        if pos is None: return # in case of missing floo<p></p>r
-        self.parent.pos = pos
+        nextPos = self.parent.pos + self.way
+        if not m.isValid(nextPos):
+            self.way = -self.way # turn around
+            return self.move()
+
+        #try climbing
+        nextElem = m.get(nextPos)
+        if nextElem.isFloor():
+            self.status = RunOnFloorStrategy._status_climbing
+            self.parent.pos = self.parent.pos + Pos.up
+            return
+
+        # special case of climbing end
+        climbingEnd = self.parent.pos + Pos.down + self.way
+        if m.get(climbingEnd).isFloor() and nextElem.isAir():
+            self.status = RunOnFloorStrategy._status_walking
+            self.parent.pos = nextPos
+            return
+
+
+        underfootPos = self.parent.pos + Pos.down
+        if not m.isValid(underfootPos):
+            self.parent.deleteMe()
+            return None
+
+        underfootElem = m.get(underfootPos)
+
+        # if we don't have floor, jump
+        if underfootElem.isAir():
+            self.status = RunOnFloorStrategy._status_jumping
+            self.parent.pos = underfootPos
+            return
+
+        assert underfootElem.isFloor()
+
+        self.status = RunOnFloorStrategy._status_walking
+        self.parent.pos = nextPos
 
 
     def action(self):

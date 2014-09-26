@@ -24,6 +24,9 @@ class Pos(namedtuple('Pos', 'x y')):
     def __div__(self, i):
         return Pos(self.x // i, self.y // i)
 
+    def __neg__(self):
+        return Pos(-self.x, -self.y)
+
     def addX(self, x):
         return Pos(self.x + x, self.y)
 

@@ -137,6 +137,9 @@ class ColorWalker(ColorVisual):
         self.fbo.clear()
         with self.fbo:
             self.color()
+
+            direction = (self.parent.current_strategy.way, self.parent.current_strategy.status)
+
             Rectangle(texture = self.texture_handler_walking.getRightTexture(direction),
                 pos = (0, 0), size = cell_max_size)
 
@@ -244,12 +247,24 @@ class WalkerWalkingTexture(object):
 
     def __init__(self):
         self.textures = {
-            Pos.right : Image('doodleWalkerWalking_right.png').texture,
-            Pos.left : Image('doodleWalkerWalking_left.png').texture,
+            (Pos.right, RunOnFloorStrategy._status_walking) :
+                    Image('doodleWalkerWalking_right.png').texture,
+            (Pos.left, RunOnFloorStrategy._status_walking) :
+                    Image('doodleWalkerWalking_left.png').texture,
+
+            (Pos.right, RunOnFloorStrategy._status_climbing) :
+                    Image('doodleWalkerClimbing_right.png').texture,
+            (Pos.left, RunOnFloorStrategy._status_climbing) :
+                    Image('doodleWalkerClimbing_left.png').texture,
+
+            (Pos.right, RunOnFloorStrategy._status_jumping) :
+                    Image('doodleWalkerJumping.png').texture,
+            (Pos.left, RunOnFloorStrategy._status_jumping) :
+                    Image('doodleWalkerJumping.png').texture,
         }
 
     def getRightTexture(self, pos):
-        return self.textures.get(pos, self.textures[Pos.left])
+        return self.textures.get(pos, (Pos.right, RunOnFloorStrategy._status_walking) )
 
 
 # file names : 
