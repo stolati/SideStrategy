@@ -80,7 +80,7 @@ class StratMap(object):
         self.mapTypeInst = mapTypeInst
 
         # the first time, draw everythings (slow, but keep the layers in their level)
-        self.modifiedElements = map(lambda e: e[1], self.everyElementLoop())
+        self.modifiedElements = list(map(lambda e: e[1], self.everyElementLoop()))
 
     def _changedElement(self, elem):
         self.modifiedElements.append(elem)
@@ -152,8 +152,7 @@ class StratMap(object):
 
 
     def updateElements(self, dt):
-        for e in self.elements:
-            e.current_strategy.action()
+        for e in self.elements: e.tick()
 
     def update(self, dt):
 
@@ -161,7 +160,7 @@ class StratMap(object):
         self.drawMap()
 
         for e in self.elements:
-            e.visual.update(dt)
+            e.draw(dt)
 
 
     def findElement(self, trueFunction):

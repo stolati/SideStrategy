@@ -127,6 +127,7 @@ class MotherShipStrategy(Strategy):
         self.life = 10
         self.speed = Speed(speed)
         self.first = True
+        self.qteWalker = 0
 
     def action(self):
 
@@ -137,9 +138,11 @@ class MotherShipStrategy(Strategy):
 
             if self.first:
                 self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
-                self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
+                #self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
             else :
-                self.parent.side.createWalker(self.parent.pos)
+                if self.qteWalker < 10:
+                    #self.parent.side.createWalker(self.parent.pos)
+                    self.qteWalker += 1
 
             self.first = False
 
@@ -224,7 +227,9 @@ class DiggerDirectionStrategy(Strategy):
         m = self.parent.playmap._map
 
         if not m.get(self.parent.pos).isFloor():
-            self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
+            floor = self.putOnFloor(self.parent.pos)
+            if floor is None: return
+            self.parent.pos = floor + Pos(0, -1)
 
         if self.paths is None: self._fillPath()
 

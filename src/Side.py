@@ -26,7 +26,8 @@ conf = {
     'digger':{
         'strategy': partial(DiggerFindDirectionStrategy),
         'viewfield': partial(ViewFieldAroundSimple, 2),
-        'speed': partial(Speed, 5),
+        'speed': partial(Speed, 50),
+        'visual': partial(ColorDigger),
     },
     'flyer':{
         'strategy': partial(FlyerFindDirectionStrategy),
@@ -101,8 +102,14 @@ class Side(object):
         goalElem = conf[goalName] 
 
         def generatorFct(position, **kargs):
+            if 'visual' in goalElem:
+                visual = goalElem['visual'](color = self.color)
+            else:
+                visual = ColorVisual(color = self.color)
+
+
             e = Element(goalName, playmap = self.game, side = self, startPos = position,
-                visual = ColorVisual(color = self.color),
+                visual = visual,
                 strategy = goalElem['strategy'](**kargs),
                 viewfield = goalElem['viewfield'](),
                 speed = goalElem['speed'](),

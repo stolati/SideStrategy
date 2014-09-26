@@ -1,7 +1,7 @@
 #!/usr/bin/kivy
 import kivy
 
-import sys
+import sys, os, os.path
 import random
 from pprint import pprint
 
@@ -35,6 +35,7 @@ from kivy.properties import NumericProperty, ReferenceListProperty
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.graphics import *
+import kivy.resources
 
 from strategies import *
 from utils import *
@@ -206,9 +207,9 @@ class StratApp(App):
 
         #self._map = loadMapFromFile('map03')
 
-        mapTypeInst = random.choice([OddQ()])
+        mapTypeInst = random.choice([Squared()])
 
-        self._map = generateMap(mapTypeInst = mapTypeInst)
+        self._map = generateMap(mapTypeInst = mapTypeInst, size = Pos(50, 25))
 
         self._game = StratGame(self._map, mapTypeInst)
 
@@ -218,5 +219,11 @@ class StratApp(App):
 
 
 if __name__ == '__main__':
+
+    # adding asset path into kivy resources
+    assets_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets'))
+    for (dirpath, dirnames, filenames) in os.walk(assets_dir):
+        kivy.resources.resource_add_path(dirpath)
+
     #cProfile.run('StratApp().run()')
     StratApp().run()
