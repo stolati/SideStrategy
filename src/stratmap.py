@@ -161,6 +161,8 @@ class StratMap(object):
 
     def update(self, dt):
 
+
+
         #first draw the map so it will be first
         self.drawMap()
 

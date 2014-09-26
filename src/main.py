@@ -30,12 +30,15 @@ from pprint import pprint
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.uix.scatter import Scatter
-from kivy.properties import NumericProperty, ReferenceListProperty
+from kivy.uix.scatter import Scatter, ScatterPlane
+from kivy.properties import *
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.graphics import *
 import kivy.resources
+from kivy.graphics.transformation import Matrix
+
+from kivy.config import Config
 
 from strategies import *
 from utils import *
@@ -87,10 +90,16 @@ class FPSCalculatorBetter(object):
         return res
 
 
+class ScatterPlaneStrat(ScatterPlane):
+    """Same as scatter, but the touch modifications are differents"""
+    pass
+
 
 class StratGame(Widget):
 
     visual_marge = 0.01
+
+    transform = ObjectProperty(Matrix())
 
     def __init__(self, stratMap, mapTypeInst, **kargs):
         super(StratGame, self).__init__(**kargs)
@@ -111,7 +120,6 @@ class StratGame(Widget):
         self.userSide = userSide
         self.computerSide = computerSide
         self.fps = FPSCalculatorBetter()
-
 
     def id2pos(self, x, y):
         """left 10 percent on each side"""
@@ -136,21 +144,11 @@ class StratGame(Widget):
         pos = Pos(x - hMarge, y - wMarge)
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
 
-    def drawCells(self):
-        with self.canvas:
-            for x in range(self.cellx):
-                for y in range(self.celly):
-                    Color(random(), random(), random())
-                    posX, posY, sizeX, sizeY = self.id2pos(x, y)
-                    Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
-
     def update(self, dt):
 
         self.fps.addValue(dt)
         if self.fps.haveToCalculate():
             print('fps : ' + str(self.fps.calculate()))
-            pass
-
 
         # (len(self.canvas.get_group(None)))
         with self.canvas:
@@ -167,9 +165,39 @@ class StratGame(Widget):
             #self._map.update(dt)
 
     def on_touch_move(self, touch):
-        print('on_touch_move')
-        print(touch)
-        print('button : ' + repr(touch.button))
+
+        print('<touch button="%s" dpos="%s">' 
+            % (touch.button, touch.dpos))
+
+        assert len(touch.dpos) == 2
+
+        deltaX, deltaY = touch.dpos[0], touch.dpos[1]
+
+        print('moving (%s, %s)' % (deltaX, deltaY))
+        self.transform = self.transform.translate(x = deltaX, y = deltaY, z = 0)
+
+        # touch have values : 
+        # pos (x, y)
+        # button (left, right, middle, scrollup, scrooldown)
+
+        # dpos <= delta between this and the last event
+        # ppos <= previous position
+        # 
+
+        # touch.distance(other event) <= good
+
+
+        # For a map moving movement, calculate the delta
+        #if touch.dista
+
+
+
+
+
+
+        #print('on_touch_move')
+        #print(touch)
+        #print('button : ' + repr(touch.button))
 
         #"""Blacken the cases when the mouse touch a case"""
         #with self.canvas:
@@ -209,16 +237,26 @@ class StratApp(App):
 
         mapTypeInst = random.choice([Squared()])
 
-        self._map = generateMap(mapTypeInst = mapTypeInst, size = Pos(50, 25))
+        self._map = generateMap(mapTypeInst = mapTypeInst)
 
         self._game = StratGame(self._map, mapTypeInst)
 
+        xsize, ysize = self._map.size
+        self._game.height = ysize * 64
+        self._game.width = xsize * 64
+
+        self._scatter = ScatterPlaneStrat()
+        self._scatter.add_widget(self._game)
+
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
+        #Clock.schedule_interval(self._game.update, 1.0/15.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)
-        return self._game
+        return self._scatter
 
 
 if __name__ == '__main__':
+
+    #Config.set('kivy', 'show_fps', True)
 
     # adding asset path into kivy resources
     assets_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets'))

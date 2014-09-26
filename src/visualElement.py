@@ -267,10 +267,3 @@ class WalkerWalkingTexture(object):
         return self.textures.get(pos, (Pos.right, RunOnFloorStrategy._status_walking) )
 
 
-# file names : 
-# doodleDigger.png
-# doodlePlanner.png
-# doodleWalkerClimbing.png
-# doodelWalkerJumping.png
-# doodleWalkerWalking.png
-#
