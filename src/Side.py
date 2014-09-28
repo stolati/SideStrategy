@@ -1,5 +1,6 @@
 import random
 from functools import partial
+from pprint import pprint
 
 
 # Side is a player
@@ -55,6 +56,8 @@ class Side(object):
 
         self._lastVisibles = set()
         self._lastNotFog = set()
+
+        self._selectedElement = []
 
     def updateMap(self, dt):
         #self.game._map.update(dt)
@@ -150,3 +153,19 @@ class Side(object):
             good.setStrategy(FlyerDirectionStrategy(direction = pos))
 
 
+    def selection(self, positions):
+        print('selection : ' + repr(positions))
+
+        for e in self._selectedElement:
+            e.unselected()
+
+        # TODO instead of having a list
+        # give the max/min of each, the loop should be faster
+        element_selected = list()
+        for e in self.game._map.elements:
+            if e.side is not self: continue
+            if e.pos in positions:
+                element_selected.append(e)
+                e.selected()
+
+        self._selectedElement = element_selected

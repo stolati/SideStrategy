@@ -100,6 +100,29 @@ class ScatterPlaneStrat(ScatterPlane):
     pass
 
 
+    def on_touch_down(self, touch):
+        if touch.button == 'scrolldown':
+            matrix = Matrix()
+            matrix.translate(x = 1.0, y = 1.0, z = 0)
+            self.apply_transform(matrix, anchor = (0, 0))
+
+            print('scrolling down')
+            return True
+
+        if touch.button == 'scrollup':
+
+            matrix = Matrix()
+            matrix.translate(x = -1.0, y = -1.0, z = 0 )
+            self.apply_transform(matrix, anchor = (0, 0))
+
+
+            print('scrolling up')
+            return True
+
+        return super(ScatterPlaneStrat, self).on_touch_down(touch)
+
+
+
 class StratGame(Widget):
 
     visual_marge = 0.01
@@ -125,6 +148,12 @@ class StratGame(Widget):
         self.userSide = userSide
         self.computerSide = computerSide
         self.fps = FPSCalculatorBetter()
+
+        self._selection = InstructionGroup()
+        self._selectionStart = None
+        self._selectionEnd = None
+
+        self._touchStatus = None
 
     def getQuanta(self):
         quantumx = self.parent.width / nb_element_on_screen.x
@@ -171,19 +200,88 @@ class StratGame(Widget):
 
             self._map.updateElements(dt)
             self.userSide.updateMap(dt)
-            #self._map.update(dt)
+
+        if self._selection is not None:
+            self.canvas.remove(self._selection)
+
+        self._selection = InstructionGroup()
+        self.canvas.add(self._selection)
+
+        self._selection_zone_update()
+
+
+    def _selection_zone_update(self : int):
+
+        self._selection.clear()
+        if self._selectionStart and self._selectionEnd:
+
+            xStart = min(self._selectionStart[0], self._selectionEnd[0])
+            xEnd = max(self._selectionStart[0], self._selectionEnd[0])
+            xDelta = abs(xEnd - xStart)
+
+            yStart = min(self._selectionStart[1], self._selectionEnd[1])
+            yEnd = max(self._selectionStart[1], self._selectionEnd[1])
+            yDelta = abs(yEnd - yStart)
+
+            self._selection.add(named_colors.violet())
+            self._selection.add(Line(points = (
+                xStart, yStart, 
+                xEnd, yStart,
+                xEnd, yEnd,
+                xStart, yEnd,
+                xStart, yStart, 
+            )))
+
+
+    def _selection_single(self, position):
+        idEl = self.pos2id(position.x, position.y)
+        self.userSide.selection([idEl])
+
+    def _selection_multiples(self, position1, position2):
+        idEl1 = self.pos2id(position1.x, position1.y)
+        idEl2 = self.pos2id(position2.x, position2.y)
+
+        xStart = min(idEl1.x, idEl2.x)
+        xEnd = max(idEl1.x, idEl2.x)
+        yStart = min(idEl1.y, idEl2.y)
+        yEnd = max(idEl1.y, idEl2.y)
+
+        positions = []
+        for x in range(xStart, xEnd + 1):
+            for y in range(yStart, yEnd + 1):
+                positions.append(Pos(x, y))
+
+        self.userSide.selection(positions)
+
+    def on_touch_up(self, touch):
+
+        if self._selectionEnd is None:
+            self._selection_single(self._selectionStart)
+        else :
+            self._selection_multiples(self._selectionStart, self._selectionEnd)
+
+        self._selectionStart = None
+        self._selectionEnd = None
+        self._selection.clear()
+
 
     def on_touch_move(self, touch):
 
-        print('<touch button="%s" dpos="%s">' 
-            % (touch.button, touch.dpos))
+        #print('<touch button="%s" dpos="%s">' 
+            #% (touch.button, touch.dpos))
 
-        assert len(touch.dpos) == 2
+        assert self._selectionStart is not None
 
-        deltaX, deltaY = touch.dpos[0], touch.dpos[1]
+        self._selectionEnd = Pos(*touch.pos)
 
-        print('moving (%s, %s)' % (deltaX, deltaY))
-        self.transform = self.transform.translate(x = deltaX, y = deltaY, z = 0)
+        self._selection_zone_update()
+
+        #assert len(touch.dpos) == 2
+
+        #deltaX, deltaY = touch.dpos[0], touch.dpos[1]
+
+        #print('moving (%s, %s)' % (deltaX, deltaY))
+        #self.transform = self.transform.translate(x = deltaX, y = deltaY, z = 0)
 
         # touch have values : 
         # pos (x, y)
@@ -219,6 +317,10 @@ class StratGame(Widget):
         #    Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
+
+        self._touchStatus = 'simple'
+        self._selectionStart = Pos(*touch.pos)
+
         print('touch down')
         #print('touch down')
         #print(touch.x)
@@ -254,16 +356,22 @@ class StratApp(App):
         #self._game.height = ysize * 64
         #self._game.width = xsize * 64
 
-        self._scatter = ScatterPlaneStrat()
-        self._scatter.add_widget(self._game)
+        result = self._game
+        
+        with_scatter = False
+        if with_scatter: 
 
-        self._scatter.do_rotation = False
-        #self._scatter.do_scale = False
+            self._scatter = ScatterPlaneStrat()
+            self._scatter.add_widget(self._game)
+
+            self._scatter.do_rotation = False
+            #self._scatter.do_scale = False
+            result = self._scatter
 
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         #Clock.schedule_interval(self._game.update, 1.0/15.0)
         Clock.schedule_interval(self._game.update, 1.0/15.0)
-        return self._scatter
+        return result
 
 
 if __name__ == '__main__':

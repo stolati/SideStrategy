@@ -24,6 +24,7 @@ cell_max_size = (255, 255)
 class Visual(object):
     def __init__(self, parent = None):
         self.parent = parent
+        self.selected = False
 
     def update(self, dt, **kargs): raise NotImplemented()
 
@@ -83,7 +84,10 @@ class ColorDigger(ColorVisual):
         # update the fbo texture
         self.fbo.clear()
         with self.fbo:
-            self.color()
+            if self.selected:
+                named_colors.violet()
+            else:
+                self.color()
             Rectangle(texture = self.texture_handler.getRightTexture(direction),
                 pos = (0, 0), size = cell_max_size)
 
@@ -108,7 +112,10 @@ class ColorFlyer(ColorVisual):
         # update the fbo texture
         self.fbo.clear()
         with self.fbo:
-            self.color()
+            if self.selected:
+                named_colors.violet()
+            else:
+                self.color()
             Rectangle(texture = self.texture_handler.getRightTexture(direction),
                 pos = (0, 0), size = cell_max_size)
 
@@ -136,7 +143,10 @@ class ColorWalker(ColorVisual):
         # update the fbo texture
         self.fbo.clear()
         with self.fbo:
-            self.color()
+            if self.selected:
+                named_colors.violet()
+            else:
+                self.color()
 
             direction = (self.parent.current_strategy.way, self.parent.current_strategy.status)
 
@@ -198,6 +208,12 @@ class Element(object):
 
     def draw(self, dt):
         self.visual.update(dt, direction = self.direction)
+
+    def unselected(self):
+        self.visual.selected = False
+
+    def selected(self):
+        self.visual.selected = True
 
 
 # From http://legacy.python.org/dev/peps/pep-0318/#examples
