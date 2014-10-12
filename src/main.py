@@ -43,9 +43,6 @@ import kivy
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.uix.scatter import Scatter, ScatterPlane
-from kivy.uix.anchorlayout import AnchorLayout
-from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import *
 from kivy.vector import Vector
 from kivy.clock import Clock
@@ -117,53 +114,12 @@ class FPSCalculatorBetter(object):
 
 
 
-class ScatterPlaneStrat(ScatterPlane):
-    """Same as scatter, but the touch modifications are differents"""
-    pass
-
-
-    def on_touch_down(self, touch):
-        if touch.button == 'scrolldown':
-            matrix = Matrix()
-            matrix.translate(x = 1.0, y = 1.0, z = 0)
-            self.apply_transform(matrix, anchor = (0, 0))
-
-            print('scrolling down')
-            return True
-
-        if touch.button == 'scrollup':
-
-            matrix = Matrix()
-            matrix.translate(x = -1.0, y = -1.0, z = 0 )
-            self.apply_transform(matrix, anchor = (0, 0))
-
-
-            print('scrolling up')
-            return True
-
-        return super(ScatterPlaneStrat, self).on_touch_down(touch)
-
-    def on_touch_up(self, touch):
-        if touch.button == 'scrolldown' or touch.button == 'scrollup':
-            return True # ignore it
-
-        return super(ScatterPlaneStrat, self).on_touch_up(touch)
-
-
-
-
 class StratGame(Widget):
 
     transform = ObjectProperty(Matrix())
 
     def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
-
-        # should be responsible for :
-        # - moving the underline canvas when mouse is near
-        # - 
-        # - getting keyboard input
-        # - 
 
         self.mapTypeInst = Squared()
         self._map = generateMap(mapTypeInst = Squared())
@@ -194,19 +150,11 @@ class StratGame(Widget):
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down = self._on_keyboard_down)
 
-        Window.bind(on_motion = self._on_motion)
-        Window.bind(on_mouse_move = self._on_motion)
-
-        Window.bind(mouse_pos = self._on_mouse_change_all)
-
-    def _on_motion(self, *args, **kargs):
-        if False:
-            pprint(args)
-            pprint(kargs)
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down = self._on_keyboard_down)
         self._keyboard = None
+
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         if False:
@@ -237,11 +185,6 @@ class StratGame(Widget):
 
         pos = Pos(x, y)
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
-
-    def _on_mouse_change_all(self, *args, **kargs):
-        if False:
-            print(args)
-            print(kargs)
 
     def update(self, dt):
 

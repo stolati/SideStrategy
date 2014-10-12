@@ -39,12 +39,34 @@ class MouseBorderScroll(ScrollView):
         super(MouseBorderScroll, self).__init__(**kargs)
 
         Window.bind(mouse_pos = self.on_mouse_pos)
+        Window.bind(on_key_down = self.on_key_down)
+
+
         self.do_scroll_x = True
         self.do_scroll_y = True
 
     #def on_touch_down(self, touch): pass # do nothing
     #def on_touch_up(self, touch): pass # do nothing
     #def on_touch_move(self, touch): pass # do nothing
+
+    def move(self, deltaX, deltaY):
+        if deltaX != 0: self.scroll_x += deltaX
+        if deltaY != 0: self.scroll_y += deltaY
+
+    def on_key_down(self, keyboard, keycode, keycode2, text, modifier):
+        deltaX, deltaY = 0, 0
+        print(keycode)
+        print(keycode2)
+        if keycode2 == 72: # up
+            self.move(0, +.5)
+        if keycode2 == 80: # down
+            self.move(0, -.5)
+        if keycode2 == 75: # left
+            self.move(-0.5, 0)
+        if keycode2 == 77: # right
+            self.move(+0.5, 0)
+
+        self.move(deltaX, deltaY)
 
     def on_mouse_pos(self, window, pos):
         x, y = pos
@@ -65,16 +87,16 @@ class MouseBorderScroll(ScrollView):
         border_y_size = self.size[1] / 10
 
         if x < border_x_size:
-            self.scroll_x -= 0.1
+            self.move(-.1, 0)
 
         if x > (self.size[0] - border_x_size):
-            self.scroll_x += 0.1
+            self.move(+.1, 0)
 
         if y < border_y_size:
-            self.scroll_y -= 0.1
+            self.move(0, -.1)
 
         if y > (self.size[1] - border_y_size):
-            self.scroll_y += 0.1
+            self.move(0, +.1)
 
         #TODO change that by an event (so we can have a fixed speed)
         #TODO have a border (so we can't go too far)
