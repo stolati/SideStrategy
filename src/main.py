@@ -1,9 +1,24 @@
 #!/usr/bin/kivy
-import kivy
 
 import sys, os, os.path
 import random
 from pprint import pprint
+
+# configure kivy
+from kivy.config import Config
+
+os.environ['KIVY_NO_CONSOLELOG'] = '1'
+
+# http://kivy.org/docs/api-kivy.config.html#module-kivy.config
+Config.set('kivy', 'show_fps', 1)
+Config.set('graphics', 'fullscreen', 0)
+#Config.set('graphics', 'show_cursor', 0)
+
+#Config.write()
+
+
+import kivy
+
 
 #import cProfile
 
@@ -132,17 +147,16 @@ class ScatterPlaneStrat(ScatterPlane):
 
 class StratGame(Widget):
 
-    visual_marge = 0.01
-
     transform = ObjectProperty(Matrix())
 
-    def __init__(self, stratMap, mapTypeInst, **kargs):
+    def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
-        self._map = stratMap
-        stratMap.playmap = self
-        self.mapTypeInst = mapTypeInst
 
-        self.cellx, self.celly = stratMap.size
+        self.mapTypeInst = Squared()
+        self._map = generateMap(mapTypeInst = Squared())
+        self._map.playmap = self
+
+        self.cellx, self.celly = self._map.size
         self._graphics = None # violet rectangle in background
 
         # create the map with 2 sides
@@ -382,54 +396,45 @@ class StratGame(Widget):
 
 
 class StratApp(App):
+    pass
 
-    def build(self):
+    #def build(self):
 
-        #self._map = loadMapFromFile('map03')
+    #    #self._map = loadMapFromFile('map03')
 
-        mapTypeInst = random.choice([Squared()])
+    #    self._game = StratGame()
 
-        self._map = generateMap(mapTypeInst = mapTypeInst)
+    #    result = self._game
 
-        self._game = StratGame(self._map, mapTypeInst)
+    #    with_scatter = True
+    #    with_scatter_object = False
 
-        xsize, ysize = self._map.size
-        #self._game.height = ysize * 64
-        #self._game.width = xsize * 64
+    #    if with_scatter_object:
+    #        result = FloatLayout()
 
-        result = self._game
-        
+    #        # creating scatter
+    #        self._scatter = ScatterPlaneStrat()
+    #        self._scatter.add_widget(self._game)
 
+    #        self._scatter.do_rotation = False
 
-        with_scatter = True
-        with_scatter_object = False
+    #        self._scatter.do_scale = with_scatter
+    #        self._scatter.do_translate = with_scatter
 
-        if with_scatter_object:
-            result = FloatLayout()
+    #        result.add_widget(self._scatter)
 
-            # creating scatter
-            self._scatter = ScatterPlaneStrat()
-            self._scatter.add_widget(self._game)
+    #        layout = AnchorLayout(
+    #            anchor_x = 'right', anchor_y = 'bottom')
+    #        btn = Button(text = 'Hello World', size_hint = (.10, .10),
+    #            pos_hint = {'x':.2, 'y':.2})
+    #        layout.add_widget(btn)
 
-            self._scatter.do_rotation = False
+    #        result.add_widget(layout)
 
-            self._scatter.do_scale = with_scatter
-            self._scatter.do_translate = with_scatter
-
-            result.add_widget(self._scatter)
-
-            layout = AnchorLayout(
-                anchor_x = 'right', anchor_y = 'bottom')
-            btn = Button(text = 'Hello World', size_hint = (.10, .10),
-                pos_hint = {'x':.2, 'y':.2})
-            layout.add_widget(btn)
-
-            result.add_widget(layout)
-
-        #Clock.schedule_interval(self._game.update, 1.0/60.0)
-        #Clock.schedule_interval(self._game.update, 1.0/15.0)
-        Clock.schedule_interval(self._game.update, 1.0/15.0)
-        return result
+    #    #Clock.schedule_interval(self._game.update, 1.0/60.0)
+    #    #Clock.schedule_interval(self._game.update, 1.0/15.0)
+    #    Clock.schedule_interval(self._game.update, 1.0/15.0)
+    #    return result
 
 
 if __name__ == '__main__':
