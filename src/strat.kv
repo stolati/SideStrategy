@@ -1,23 +1,22 @@
-FloatLayout:
+RelativeLayout:
     id: main_layout
-
-    # should be remove once stratgame not transparent
-    canvas:
-        Color:
-            rgba: 1, .3, .8, .5
-        Rectangle:
-            size: main_layout.size
-            pos: (0, 0)
 
     StratGame:
         size_hint: (1, 1)
         pos_hint: {'x':0, 'y':0}
 
+    Selection
+        id: main_select
+        # should be remove once stratgame not transparent
+        canvas:
+            Color:
+                rgba: 1, .3, .8, .5
+            #Rectangle:
+            #    size: main_layout.size
+            #    pos: (0, 0)
+
     Button:
-        text: 'should be replacedby a canvas'
+        text: repr(main_select.selection)
         size_hint: (.2, .2)
         pos_hint: {'x':.75, 'y':.05}
 
-# qui bouge
-#   selection:
-#      game: 

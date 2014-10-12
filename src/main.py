@@ -145,12 +145,87 @@ class ScatterPlaneStrat(ScatterPlane):
         return super(ScatterPlaneStrat, self).on_touch_up(touch)
 
 
+
+class Selection(Widget):
+
+    selection = ObjectProperty(None, allownone = True)
+    color = ListProperty([1, 1, 1, 1])
+
+    def __init__(self, **kargs):
+        super(Selection, self).__init__(**kargs)
+
+        self._grabbing = False
+        self._start_pos = None
+
+    def on_touch_down(self, touch):
+
+        if getattr(touch, 'device', None) != 'mouse' \
+                or getattr(touch, 'button', None) != 'left' \
+                or getattr(touch, 'is_double_tap', None) != False \
+                or getattr(touch, 'is_triple_tap', None) != False:
+            return False
+
+        self._grabbing = True
+        self._start_pos = touch.pos
+
+        return True 
+
+    def on_touch_move(self, touch):
+
+        if not self._grabbing:
+            return False
+
+        xStart, yStart = self._start_pos
+        xEnd, yEnd = touch.pos
+
+        self.canvas.after.clear()
+        with self.canvas.after:
+            Color(1, 1, 1, 1)
+            Line(points = (
+                xStart, yStart, 
+                xEnd, yStart,
+                xEnd, yEnd,
+                xStart, yEnd,
+                xStart, yStart, 
+            ))
+
+        return True
+
+    def on_touch_up(self, touch):
+
+        if not self._grabbing:
+            return False
+
+        self.canvas.after.clear()
+
+        x1, y1 = self._start_pos
+        x2, y2 = touch.pos
+
+        xStart, xEnd = min(x1, x2), max(x1, x2)
+        yStart, yEnd = min(y1, y2), max(y1, y2)
+
+        self.selection = (xStart, yStart, xEnd, yEnd)
+
+        # initialize anew
+        self._start_pos = None
+        self._grabbing = False
+
+        return True
+
+
+
 class StratGame(Widget):
 
     transform = ObjectProperty(Matrix())
 
     def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
+
+        # should be responsible for :
+        # - moving the underline canvas when mouse is near
+        # - 
+        # - getting keyboard input
+        # - 
 
         self.mapTypeInst = Squared()
         self._map = generateMap(mapTypeInst = Squared())
@@ -187,16 +262,18 @@ class StratGame(Widget):
         Window.bind(mouse_pos = self._on_mouse_change_all)
 
     def _on_motion(self, *args, **kargs):
-        pprint(args)
-        pprint(kargs)
+        if False:
+            pprint(args)
+            pprint(kargs)
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down = self._on_keyboard_down)
         self._keyboard = None
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print('keyboard down : %(keycode)s with text : %(text)s and modifiers %(modifiers)s' % 
-            locals())
+        if False:
+            print('keyboard down : %(keycode)s with text : %(text)s and modifiers %(modifiers)s' % 
+                locals())
 
 
     def getQuanta(self):
@@ -224,8 +301,9 @@ class StratGame(Widget):
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
 
     def _on_mouse_change_all(self, *args, **kargs):
-        print(args)
-        print(kargs)
+        if False:
+            print(args)
+            print(kargs)
 
     def update(self, dt):
 
@@ -302,18 +380,19 @@ class StratGame(Widget):
         self.userSide.selection(positions)
 
     def on_touch_up(self, touch):
+        if False:
 
-        if touch.button == 'scrolldown' or touch.button == 'scrollup':
-            return False
+            if touch.button == 'scrolldown' or touch.button == 'scrollup':
+                return False
 
-        if self._selectionEnd is None:
-            self._selection_single(self._selectionStart)
-        else :
-            self._selection_multiples(self._selectionStart, self._selectionEnd)
+            if self._selectionEnd is None:
+                self._selection_single(self._selectionStart)
+            else :
+                self._selection_multiples(self._selectionStart, self._selectionEnd)
 
-        self._selectionStart = None
-        self._selectionEnd = None
-        self._selection.clear()
+            self._selectionStart = None
+            self._selectionEnd = None
+            self._selection.clear()
 
 
     def on_touch_move(self, touch):
@@ -321,15 +400,16 @@ class StratGame(Widget):
         #print('<touch button="%s" dpos="%s">' 
             #% (touch.button, touch.dpos))
 
-        if touch.button == 'scrolldown' or touch.button == 'scrollup':
-            return False
+        if False:
+            if touch.button == 'scrolldown' or touch.button == 'scrollup':
+                return False
 
-        if self._selectionStart is None:
-            self._selectionStart = Pos(*touch.pos)
+            if self._selectionStart is None:
+                self._selectionStart = Pos(*touch.pos)
 
-        self._selectionEnd = Pos(*touch.pos)
+            self._selectionEnd = Pos(*touch.pos)
 
-        self._selection_zone_update()
+            self._selection_zone_update()
 
         #assert len(touch.dpos) == 2
 
@@ -352,11 +432,6 @@ class StratGame(Widget):
         # For a map moving movement, calculate the delta
         #if touch.dista
 
-
-
-
-
-
         #print('on_touch_move')
         #print(touch)
         #print('button : ' + repr(touch.button))
@@ -372,26 +447,29 @@ class StratGame(Widget):
         #    Rectangle(pos=(posX, posY), size=(sizeX, sizeY))
 
     def on_touch_down(self, touch):
+        print('touch down under it')
+        return True
+        if False:
 
-        self._touchStatus = 'simple'
-        self._selectionStart = Pos(*touch.pos)
+            self._touchStatus = 'simple'
+            self._selectionStart = Pos(*touch.pos)
 
-        print('touch down')
-        #print('touch down')
-        #print(touch.x)
-        #print(touch.y)
+            print('touch down')
+            #print('touch down')
+            #print(touch.x)
+            #print(touch.y)
 
-        #if touch.button == 'scrolldown':
-        #    self.zoom = min(self.zoom * 1.05, zoom_max)
-        #    return
+            #if touch.button == 'scrolldown':
+            #    self.zoom = min(self.zoom * 1.05, zoom_max)
+            #    return
 
-        #if touch.button == 'scrollup':
-        #    self.zoom = max(self.zoom / 1.05, 1)
-        #    return
+            #if touch.button == 'scrollup':
+            #    self.zoom = max(self.zoom / 1.05, 1)
+            #    return
 
-        pos = self.pos2id(*touch.pos)
-        if pos is None: return
-        self.userSide.command_touch(pos)
+            pos = self.pos2id(*touch.pos)
+            if pos is None: return
+            self.userSide.command_touch(pos)
 
 
 
