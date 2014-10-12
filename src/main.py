@@ -67,7 +67,7 @@ from widget.selection import Selection
 from widget.mouseBorderScroll import MouseBorderScroll
 
 
-nb_element_on_screen = Pos(20, 20)
+nb_element_on_screen = Pos(30, 30)
 
 
 class FPSCalculatorSimple(object):
@@ -121,6 +121,7 @@ class StratGame(Widget):
     def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
 
+        # map generation
         self.mapTypeInst = Squared()
         self._map = generateMap(mapTypeInst = Squared())
         self._map.playmap = self
@@ -139,39 +140,29 @@ class StratGame(Widget):
         self.computerSide = computerSide
         self.fps = FPSCalculatorBetter()
 
-        self._selection = InstructionGroup()
-        self._selectionStart = None
-        self._selectionEnd = None
+        # size relative datas
+        self._quanta = None
 
-        self._touchStatus = None
+    def on_parent(self, self_bis, parent):
+        if parent:
+            parent.bind(size = self.resize)
+            self.resize(parent, parent.size)
+            # once we have parent, we can launch the game
+            Clock.schedule_interval(self.update, 1.0/15.0)
+        else:
+            parent.unbind(size = self.resize)
 
-        # keyboard handling
-        # http://kivy.org/docs/api-kivy.core.window.html# 
-        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
-        self._keyboard.bind(on_key_down = self._on_keyboard_down)
-
-
-    def _keyboard_closed(self):
-        self._keyboard.unbind(on_key_down = self._on_keyboard_down)
-        self._keyboard = None
-
-
-    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        if False:
-            print('keyboard down : %(keycode)s with text : %(text)s and modifiers %(modifiers)s' % 
-                locals())
-
-
-    def getQuanta(self):
+    def resize(self, parent, size):
+        # recalculate base size => quanta
         quantumx = self.parent.width / nb_element_on_screen.x
         quantumy = self.parent.height / nb_element_on_screen.y
 
-        return Pos(quantumx, quantumy)
+        self._quanta = Pos(quantumx, quantumy)
 
 
     def id2pos(self, x, y):
         """left 10 percent on each side"""
-        quantumx, quantumy = self.getQuanta()
+        quantumx, quantumy = self._quanta
 
         xres, yres = self.mapTypeInst.pos2pixel(Pos(x, y), quantumx, quantumy)
 
@@ -181,15 +172,19 @@ class StratGame(Widget):
     def pos2id(self, x, y):
         """return the position to which the id is in (x, y)"""
 
-        quantumx, quantumy = self.getQuanta()
+        quantumx, quantumy = self._quanta
 
         pos = Pos(x, y)
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
 
     def update(self, dt):
 
-        sizeX = self.parent.height // nb_element_on_screen.x
-        sizeY = self.parent.height // nb_element_on_screen.y
+        sizeX, sizeY = self._quanta
+
+        oldSize = tuple(self.size)
+        calculatedSize = (sizeX * self.cellx, sizeY * self.celly)
+        if oldSize != calculatedSize:
+            self.size = calculatedSize
 
         self.fps.addValue(dt)
         if self.fps.haveToCalculate():
@@ -208,43 +203,10 @@ class StratGame(Widget):
             self._map.updateElements(dt)
             self.userSide.updateMap(dt)
 
-        if self._selection is not None:
-            self.canvas.remove(self._selection)
-
-        self._selection = InstructionGroup()
-        self.canvas.add(self._selection)
-
-        self._selection_zone_update()
-
-
-    def _selection_zone_update(self):
-
-        self._selection.clear()
-        if self._selectionStart and self._selectionEnd:
-
-            xStart = min(self._selectionStart[0], self._selectionEnd[0])
-            xEnd = max(self._selectionStart[0], self._selectionEnd[0])
-            xDelta = abs(xEnd - xStart)
-
-            yStart = min(self._selectionStart[1], self._selectionEnd[1])
-            yEnd = max(self._selectionStart[1], self._selectionEnd[1])
-            yDelta = abs(yEnd - yStart)
-
-            self._selection.add(named_colors.violet())
-            self._selection.add(Line(points = (
-                xStart, yStart, 
-                xEnd, yStart,
-                xEnd, yEnd,
-                xStart, yEnd,
-                xStart, yStart, 
-            )))
-
-
-    def _selection_single(self, position):
-        idEl = self.pos2id(position.x, position.y)
-        self.userSide.selection([idEl])
-
-    def _selection_multiples(self, position1, position2):
+    def _selection(self, position1, position2):
+        #TODO do the selection working again
+        #TODO and set the selection class just as parent of this one
+        # ( instead of 2 classes parents => position handling )
         idEl1 = self.pos2id(position1.x, position1.y)
         idEl2 = self.pos2id(position2.x, position2.y)
 
@@ -357,42 +319,6 @@ class StratGame(Widget):
 class StratApp(App):
     pass
 
-    #def build(self):
-
-    #    #self._map = loadMapFromFile('map03')
-
-    #    self._game = StratGame()
-
-    #    result = self._game
-
-    #    with_scatter = True
-    #    with_scatter_object = False
-
-    #    if with_scatter_object:
-    #        result = FloatLayout()
-
-    #        # creating scatter
-    #        self._scatter = ScatterPlaneStrat()
-    #        self._scatter.add_widget(self._game)
-
-    #        self._scatter.do_rotation = False
-
-    #        self._scatter.do_scale = with_scatter
-    #        self._scatter.do_translate = with_scatter
-
-    #        result.add_widget(self._scatter)
-
-    #        layout = AnchorLayout(
-    #            anchor_x = 'right', anchor_y = 'bottom')
-    #        btn = Button(text = 'Hello World', size_hint = (.10, .10),
-    #            pos_hint = {'x':.2, 'y':.2})
-    #        layout.add_widget(btn)
-
-    #        result.add_widget(layout)
-
-    #    #Clock.schedule_interval(self._game.update, 1.0/60.0)
-    #    #Clock.schedule_interval(self._game.update, 1.0/15.0)
-    #    Clock.schedule_interval(self._game.update, 1.0/15.0)
     #    return result
 
 

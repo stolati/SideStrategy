@@ -42,7 +42,7 @@ class Selection(RelativeLayout):
 
         self.canvas.after.clear()
         with self.canvas.after:
-            Color(1, 1, 1, 1)
+            Color(*self.color)
             Line(points = (
                 xStart, yStart, 
                 xEnd, yStart,

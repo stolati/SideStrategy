@@ -41,15 +41,18 @@ class MouseBorderScroll(ScrollView):
         Window.bind(mouse_pos = self.on_mouse_pos)
         Window.bind(on_key_down = self.on_key_down)
 
+        # TODO the whole stuff http://kivy.org/docs/api-kivy.core.window.html# 
 
         self.do_scroll_x = True
         self.do_scroll_y = True
 
-    #def on_touch_down(self, touch): pass # do nothing
-    #def on_touch_up(self, touch): pass # do nothing
-    #def on_touch_move(self, touch): pass # do nothing
+    def on_touch_down(self, touch): pass # do nothing
+    def on_touch_up(self, touch): pass # do nothing
+    def on_touch_move(self, touch): pass # do nothing
 
     def move(self, deltaX, deltaY):
+        # TODO change acceleration depending on content size
+        # (for now, the with goes faster because it's wider)
         if deltaX != 0: self.scroll_x += deltaX
         if deltaY != 0: self.scroll_y += deltaY
 
@@ -62,9 +65,9 @@ class MouseBorderScroll(ScrollView):
         if keycode2 == 80: # down
             self.move(0, -.5)
         if keycode2 == 75: # left
-            self.move(-0.5, 0)
+            self.move(-.5, 0)
         if keycode2 == 77: # right
-            self.move(+0.5, 0)
+            self.move(+.5, 0)
 
         self.move(deltaX, deltaY)
 

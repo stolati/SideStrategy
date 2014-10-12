@@ -137,7 +137,7 @@ class StratMap(object):
             else:
                 color = named_colors.brown
         elif e.isUnknown():
-            color = named_colors.black
+            color = named_colors.white
         else:
             raise Exception('type of %s not known' % e)
 
