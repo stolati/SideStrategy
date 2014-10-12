@@ -25,18 +25,20 @@ from pprint import pprint
 # - put map type into there own class
 
 
-
-
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.scatter import Scatter, ScatterPlane
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import *
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.graphics import *
 import kivy.resources
 from kivy.graphics.transformation import Matrix
+from kivy.uix.button import *
+from kivy.core.window import Window
 
 from kivy.config import Config
 
@@ -121,6 +123,11 @@ class ScatterPlaneStrat(ScatterPlane):
 
         return super(ScatterPlaneStrat, self).on_touch_down(touch)
 
+    def on_touch_up(self, touch):
+        if touch.button == 'scrolldown' or touch.button == 'scrollup':
+            return True # ignore it
+
+        return super(ScatterPlaneStrat, self).on_touch_up(touch)
 
 
 class StratGame(Widget):
@@ -155,6 +162,29 @@ class StratGame(Widget):
 
         self._touchStatus = None
 
+        # keyboard handling
+        # http://kivy.org/docs/api-kivy.core.window.html# 
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        self._keyboard.bind(on_key_down = self._on_keyboard_down)
+
+        Window.bind(on_motion = self._on_motion)
+        Window.bind(on_mouse_move = self._on_motion)
+
+        Window.bind(mouse_pos = self._on_mouse_change_all)
+
+    def _on_motion(self, *args, **kargs):
+        pprint(args)
+        pprint(kargs)
+
+    def _keyboard_closed(self):
+        self._keyboard.unbind(on_key_down = self._on_keyboard_down)
+        self._keyboard = None
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        print('keyboard down : %(keycode)s with text : %(text)s and modifiers %(modifiers)s' % 
+            locals())
+
+
     def getQuanta(self):
         quantumx = self.parent.width / nb_element_on_screen.x
         quantumy = self.parent.height / nb_element_on_screen.y
@@ -178,6 +208,10 @@ class StratGame(Widget):
 
         pos = Pos(x, y)
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
+
+    def _on_mouse_change_all(self, *args, **kargs):
+        print(args)
+        print(kargs)
 
     def update(self, dt):
 
@@ -210,7 +244,7 @@ class StratGame(Widget):
         self._selection_zone_update()
 
 
-    def _selection_zone_update(self : int):
+    def _selection_zone_update(self):
 
         self._selection.clear()
         if self._selectionStart and self._selectionEnd:
@@ -255,6 +289,9 @@ class StratGame(Widget):
 
     def on_touch_up(self, touch):
 
+        if touch.button == 'scrolldown' or touch.button == 'scrollup':
+            return False
+
         if self._selectionEnd is None:
             self._selection_single(self._selectionStart)
         else :
@@ -270,7 +307,11 @@ class StratGame(Widget):
         #print('<touch button="%s" dpos="%s">' 
             #% (touch.button, touch.dpos))
 
-        assert self._selectionStart is not None
+        if touch.button == 'scrolldown' or touch.button == 'scrollup':
+            return False
+
+        if self._selectionStart is None:
+            self._selectionStart = Pos(*touch.pos)
 
         self._selectionEnd = Pos(*touch.pos)
 
@@ -358,15 +399,32 @@ class StratApp(App):
 
         result = self._game
         
-        with_scatter = False
-        if with_scatter: 
 
+
+        with_scatter = True
+        with_scatter_object = False
+
+        if with_scatter_object:
+            result = FloatLayout()
+
+            # creating scatter
             self._scatter = ScatterPlaneStrat()
             self._scatter.add_widget(self._game)
 
             self._scatter.do_rotation = False
-            #self._scatter.do_scale = False
-            result = self._scatter
+
+            self._scatter.do_scale = with_scatter
+            self._scatter.do_translate = with_scatter
+
+            result.add_widget(self._scatter)
+
+            layout = AnchorLayout(
+                anchor_x = 'right', anchor_y = 'bottom')
+            btn = Button(text = 'Hello World', size_hint = (.10, .10),
+                pos_hint = {'x':.2, 'y':.2})
+            layout.add_widget(btn)
+
+            result.add_widget(layout)
 
         #Clock.schedule_interval(self._game.update, 1.0/60.0)
         #Clock.schedule_interval(self._game.update, 1.0/15.0)

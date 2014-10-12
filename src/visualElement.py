@@ -36,7 +36,7 @@ class ColorVisual(Visual):
     def __init__(self, color = named_colors.white, **kargs):
         super(ColorVisual, self).__init__(**kargs)
         self._graphics = None
-        self.color = color
+        self._color = color
         self._graphicColor = None
 
     def _getSizeAndPos(self):
@@ -48,8 +48,8 @@ class ColorVisual(Visual):
         size, pos = self._getSizeAndPos()
 
         if self._graphics is None:
-            self._graphicColor = self.color()
-            self._graphics = Rectangle(source='doodleDigger.png', pos = pos, size = size)
+            self._graphicColor = self._color()
+            self._graphics = Rectangle(pos = pos, size = size)
         else :
             self._graphics.pos = pos
             self._graphics.size = size
@@ -87,7 +87,10 @@ class ColorDigger(ColorVisual):
             if self.selected:
                 named_colors.violet()
             else:
-                self.color()
+                self._color()
+
+            Rectangle(pos = (0, 0), size = cell_max_size)
+
             Rectangle(texture = self.texture_handler.getRightTexture(direction),
                 pos = (0, 0), size = cell_max_size)
 
@@ -115,7 +118,7 @@ class ColorFlyer(ColorVisual):
             if self.selected:
                 named_colors.violet()
             else:
-                self.color()
+                self._color()
             Rectangle(texture = self.texture_handler.getRightTexture(direction),
                 pos = (0, 0), size = cell_max_size)
 
@@ -146,7 +149,7 @@ class ColorWalker(ColorVisual):
             if self.selected:
                 named_colors.violet()
             else:
-                self.color()
+                self._color()
 
             direction = (self.parent.current_strategy.way, self.parent.current_strategy.status)
 

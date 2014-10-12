@@ -154,8 +154,6 @@ class Side(object):
 
 
     def selection(self, positions):
-        print('selection : ' + repr(positions))
-
         for e in self._selectedElement:
             e.unselected()
 
@@ -169,3 +167,6 @@ class Side(object):
                 e.selected()
 
         self._selectedElement = element_selected
+        print(element_selected)
+
+

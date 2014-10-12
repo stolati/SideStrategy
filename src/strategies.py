@@ -217,10 +217,9 @@ class RunOnFloorStrategy(Strategy):
             e.deleteMe()
             return
 
-        #hack for now, get current color
-        selfCol = self.parent.visual.color
+        curSide = self.parent.side
         for e in self.parent.playmap._map.findOnPos(pos, self.parent):
-            if e.visual.color == selfCol: continue #TODO replace that by side
+            if e.side is curSide: continue
 
             # we are encounting a enemy, getting the stategy to know what it is
             # TODO instead do a life count
