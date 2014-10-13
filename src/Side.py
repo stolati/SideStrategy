@@ -99,6 +99,8 @@ class Side(object):
 
         self._map.update(dt)
 
+    def resetMap(self):
+        self._map.resetDraw()
 
     def __getattr__(self, name):
         if not name.startswith('create'):

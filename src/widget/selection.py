@@ -22,7 +22,7 @@ class Selection(RelativeLayout):
                 or getattr(touch, 'button', None) != 'left' \
                 or getattr(touch, 'is_double_tap', None) != False \
                 or getattr(touch, 'is_triple_tap', None) != False:
-            return False
+            return super(RelativeLayout, self).on_touch_down(touch)
 
         self._grabbing = True
         self._start_pos = touch.pos
@@ -33,9 +33,10 @@ class Selection(RelativeLayout):
 
         #TODO make sure that the move/up are from the initial touch down
         #(we can have a multi touch down/move/up at the same time)
+        # for that, we have to check the id of event
 
         if not self._grabbing:
-            return False
+            return super(RelativeLayout, self).on_touch_move(touch)
 
         xStart, yStart = self._start_pos
         xEnd, yEnd = touch.pos
@@ -56,7 +57,7 @@ class Selection(RelativeLayout):
     def on_touch_up(self, touch):
 
         if not self._grabbing:
-            return False
+            return super(RelativeLayout, self).on_touch_up(touch)
 
         self.canvas.after.clear()
 

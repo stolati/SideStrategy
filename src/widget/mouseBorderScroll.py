@@ -72,9 +72,26 @@ class MouseBorderScroll(ScrollView):
         self.do_scroll_x = True
         self.do_scroll_y = True
 
-    def on_touch_down(self, touch): pass # do nothing
-    def on_touch_up(self, touch): pass # do nothing
-    def on_touch_move(self, touch): pass # do nothing
+    #pass the event to sub elements
+    def on_touch_down(self, touch):
+        self.dispatch_children_transform('on_touch_down', touch)
+
+    def on_touch_up(self, touch):
+        self.dispatch_children_transform('on_touch_up', touch)
+
+    def on_touch_move(self, touch):
+        self.dispatch_children_transform('on_touch_move', touch)
+
+    #TODO when updated, a dispatch_children is created
+    def dispatch_children_transform(self, event, touch):
+        touch.push()
+        touch.apply_transform_2d(self.to_local)
+        for child in self.children[:]:
+            if child.dispatch(event, touch):
+                return True
+        touch.pop
+
+
 
     def move(self, deltaX, deltaY):
         deltaX *= self.move_step

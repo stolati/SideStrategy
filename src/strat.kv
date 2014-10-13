@@ -1,30 +1,32 @@
 RelativeLayout:
     id: main_layout
+    on_size: strat_game.on_resize(*args)
 
-    Selection:
-        id: main_select
+    MouseBorderScroll:
         size_hint: (1, 1)
-        pos_int: (0, 0)
-        color: .5, 0, 1, 1
+        pos_int: {'x':0, 'y':0}
 
-        MouseBorderScroll:
-            size_hint: (1, 1)
-            pos_int: {'x':0, 'y':0}
 
-            #Widget:
-            #    size_hint_y: None
-            #    size_hint_x: None
-            #    size: (1000, 1000)
-            #    pos_int: (0, 0)
+        Selection:
+            id: main_select
+            size_hint_y: None
+            size_hint_x: None
+            size: strat_game.size 
+            on_selection: strat_game.selection(args[1])
+
+            pos_int: (0, 0)
+            color: .5, 0, 1, 1
 
             StratGame:
+                id: strat_game
                 size_hint_y: None
                 size_hint_x: None
                 size: (1000, 1000)
                 pos_int: (0, 0)
 
     Button:
-        #text: repr(main_select.selection)
         size_hint: (.2, .2)
         pos_hint: {'x':.75, 'y':.05}
+        text: repr(strat_game.size)
+        on_release: strat_game.tooglePlainView()
 

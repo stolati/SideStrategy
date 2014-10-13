@@ -161,14 +161,14 @@ class StratMap(object):
 
     def update(self, dt):
 
-
-
         #first draw the map so it will be first
         self.drawMap()
 
         for e in self.elements:
             e.draw(dt)
 
+    def resetDraw(self):
+        print('resetDraw, we should really TODO it')
 
     def findElement(self, trueFunction):
         """Find an element in the map to which the function return true
