@@ -31,9 +31,35 @@ from kivy.uix.scrollview import ScrollView
 
 #TODO maybe use a simplier class (intead of the whole package)
 #TODO for selection, get how the events are dispatched
+#TODO maybe acceleration based on proximity with border ?
 class MouseBorderScroll(ScrollView):
 
     border = VariableListProperty([10, 10, 10, 10])
+    move_step = NumericProperty(10)
+
+    # TODO remove when updated to last version
+    def convert_distance_to_scroll(self, dx, dy):
+        '''Convert a distance in pixels to a scroll distance, depending on the
+        content size and the scrollview size.
+        The result will be a tuple of scroll distance that can be added to
+        :data:`scroll_x` and :data:`scroll_y`
+        '''
+        if not self._viewport:
+            return 0, 0
+        vp = self._viewport
+        if vp.width > self.width:
+            sw = vp.width - self.width
+            sx = dx / float(sw)
+        else:
+            sx = 0
+        if vp.height > self.height:
+            sh = vp.height - self.height
+            sy = dy / float(sh)
+        else:
+            sy = 1
+        return sx, sy 
+
+
 
     def __init__(self, **kargs):
         super(MouseBorderScroll, self).__init__(**kargs)
@@ -51,23 +77,31 @@ class MouseBorderScroll(ScrollView):
     def on_touch_move(self, touch): pass # do nothing
 
     def move(self, deltaX, deltaY):
-        # TODO change acceleration depending on content size
-        # (for now, the with goes faster because it's wider)
-        if deltaX != 0: self.scroll_x += deltaX
-        if deltaY != 0: self.scroll_y += deltaY
+        deltaX *= self.move_step
+        deltaY *= self.move_step
+        deltaX, deltaY = self.convert_distance_to_scroll(deltaX, deltaY)
+
+        if deltaX != 0:
+            self.scroll_x += deltaX
+        if deltaY != 0:
+            self.scroll_y += deltaY
+
+        if deltaX != 0 or deltaY != 0:
+            self._update_effect_bounds()
 
     def on_key_down(self, keyboard, keycode, keycode2, text, modifier):
+        print('on_key_down')
         deltaX, deltaY = 0, 0
         print(keycode)
         print(keycode2)
         if keycode2 == 72: # up
-            self.move(0, +.5)
+            self.move(0, +1)
         if keycode2 == 80: # down
-            self.move(0, -.5)
+            self.move(0, -1)
         if keycode2 == 75: # left
-            self.move(-.5, 0)
+            self.move(-1, 0)
         if keycode2 == 77: # right
-            self.move(+.5, 0)
+            self.move(+1, 0)
 
         self.move(deltaX, deltaY)
 
@@ -90,16 +124,16 @@ class MouseBorderScroll(ScrollView):
         border_y_size = self.size[1] / 10
 
         if x < border_x_size:
-            self.move(-.1, 0)
+            self.move(-1, 0)
 
         if x > (self.size[0] - border_x_size):
-            self.move(+.1, 0)
+            self.move(+1, 0)
 
         if y < border_y_size:
-            self.move(0, -.1)
+            self.move(0, -1)
 
         if y > (self.size[1] - border_y_size):
-            self.move(0, +.1)
+            self.move(0, +1)
 
         #TODO change that by an event (so we can have a fixed speed)
         #TODO have a border (so we can't go too far)
