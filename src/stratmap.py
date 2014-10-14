@@ -168,6 +168,10 @@ class StratMap(object):
             e.draw(dt)
 
     def resetDraw(self):
+        self.modifiedElements = []
+        for pos, elem in self.everyElementLoop():
+            self.modifiedElements.append(elem)
+
         print('resetDraw, we should really TODO it')
 
     def findElement(self, trueFunction):
