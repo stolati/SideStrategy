@@ -15,6 +15,8 @@ class Selection(RelativeLayout):
 
         self._grabbing = False
         self._start_pos = None
+        self._select_instruction = InstructionGroup()
+        self.canvas.after.add(self._select_instruction)
 
     def on_touch_down(self, touch):
 
@@ -41,16 +43,19 @@ class Selection(RelativeLayout):
         xStart, yStart = self._start_pos
         xEnd, yEnd = touch.pos
 
-        self.canvas.after.clear()
-        with self.canvas.after:
-            Color(*self.color)
-            Line(points = (
-                xStart, yStart, 
-                xEnd, yStart,
-                xEnd, yEnd,
-                xStart, yEnd,
-                xStart, yStart, 
-            ))
+        self._select_instruction.clear()
+
+        color = Color(*self.color)
+        line = Line(points = (
+            xStart, yStart, 
+            xEnd, yStart,
+            xEnd, yEnd,
+            xStart, yEnd,
+            xStart, yStart, 
+        ))
+
+        self._select_instruction.add(color)
+        self._select_instruction.add(line)
 
         return True
 
@@ -59,7 +64,7 @@ class Selection(RelativeLayout):
         if not self._grabbing:
             return super(RelativeLayout, self).on_touch_up(touch)
 
-        self.canvas.after.clear()
+        self._select_instruction.clear()
 
         x1, y1 = self._start_pos
         x2, y2 = touch.pos
