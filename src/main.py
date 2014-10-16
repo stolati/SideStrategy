@@ -19,13 +19,16 @@ Config.set('graphics', 'fullscreen', 0)
 
 import kivy
 
-
 #import cProfile
 
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
-# http://www.redblobgames.com/grids/hexagons/  => hexagon code
-# http://www.hexographer.com/ => hexagon map creation
 # https://docs.python.org/3/reference/datamodel.html#object.__getitem__ => python special stuff
+
+# Things to do after :
+# - 
+# - 
+# - 
+# - 
 
 # Things to do after :
 
@@ -39,6 +42,9 @@ import kivy
 
 # - put map type into there own class
 
+#:import SelectionUnits gameWidget.selectionUnits.SelectionUnits
+
+from gameWidget.selectionUnits import SelectionUnits
 
 from kivy.app import App
 from kivy.uix.label import Label
@@ -60,11 +66,6 @@ from stratmap import *
 from visualElement import *
 from Side import *
 from mapType import *
-
-
-# imported so it can be used in the kv file
-from widget.selection import Selection
-from widget.mouseBorderScroll import MouseBorderScroll
 
 
 nb_element_on_screen = Pos(30, 30)
@@ -107,7 +108,7 @@ class FPSCalculatorBetter(object):
 
 class StratGame(Widget):
 
-    transform = ObjectProperty(Matrix())
+    unit_selection = ObjectProperty(None)
 
     def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
@@ -162,8 +163,6 @@ class StratGame(Widget):
         self._parentSize = size
         self.calculateQuantaNSize() 
 
-
-
     def id2pos(self, x, y):
         """left 10 percent on each side"""
         quantumx, quantumy = self._quanta
@@ -213,7 +212,7 @@ class StratGame(Widget):
             for y in range(yStart, yEnd + 1):
                 positions.append(Pos(x, y))
 
-        self.userSide.selection(positions)
+        self.unit_selection = self.userSide.selection(positions)
 
 
     def tooglePlainView(self):

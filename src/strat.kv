@@ -1,3 +1,7 @@
+#:import MouseBorderScroll widget.mouseBorderScroll.MouseBorderScroll
+#:import Selection widget.selection.Selection
+#:import SelectionUnits gameWidget.selectionUnits.SelectionUnits
+
 RelativeLayout:
     id: main_layout
     on_size: strat_game.on_resize(*args)
@@ -23,10 +27,20 @@ RelativeLayout:
                 size_hint_x: None
                 size: (1000, 1000)
                 pos_int: (0, 0)
+                on_unit_selection: show_units.change_selection(*args)
 
     Button:
-        size_hint: (.2, .2)
-        pos_hint: {'x':.75, 'y':.05}
+        size_hint: (.1, .1)
+        pos_hint: {'x':.875, 'y':.05}
         text: repr(strat_game.size)
         on_release: strat_game.tooglePlainView()
+
+    SelectionUnits:
+        id: show_units
+        size_hint: (.1, .75)
+        pos_hint: {'x':.875, 'y':.2}
+        orientation: 'tb-rl'
+        padding: 0 
+        spacing: 5
+        sub_element_size_hint: (.5, .05)
 

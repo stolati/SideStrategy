@@ -169,6 +169,5 @@ class Side(object):
                 e.selected()
 
         self._selectedElement = element_selected
-        print(element_selected)
-
+        return self._selectedElement
 

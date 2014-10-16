@@ -172,8 +172,6 @@ class StratMap(object):
         for pos, elem in self.everyElementLoop():
             self.modifiedElements.append(elem)
 
-        print('resetDraw, we should really TODO it')
-
     def findElement(self, trueFunction):
         """Find an element in the map to which the function return true
             return the (pos, element) for valid matches"""
