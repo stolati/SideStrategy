@@ -128,18 +128,15 @@ class Side(object):
     def command_touch(self, pos):
 
         elem = self.game._map.get(pos)
+
         if elem.isFloor():
 
             #find the digger from us side
             def isGood(e):
                 return e.category == 'digger' and e.side == self
 
-            goods = list(filter(isGood, self.game._map.elements))
-            assert len(goods) == 1
-            good = goods[0]
-
-            # replace the current strategy
-            good.setStrategy(DiggerDirectionStrategy(direction = pos))
+            for good in filter(isGood, self._selectedElement):
+                good.setStrategy(DiggerDirectionStrategy(direction = pos))
 
         if elem.isAir():
 
@@ -147,12 +144,8 @@ class Side(object):
             def isGood(e):
                 return e.category == 'flyer' and e.side == self
 
-            goods = list(filter(isGood, self.game._map.elements))
-            assert len(goods) == 1
-            good = goods[0]
-
-            # replace the current strategy
-            good.setStrategy(FlyerDirectionStrategy(direction = pos))
+            for good in filter(isGood, self._selectedElement):
+                good.setStrategy(FlyerDirectionStrategy(direction = pos))
 
 
     def selection(self, positions):

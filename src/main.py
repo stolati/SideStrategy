@@ -13,6 +13,8 @@ os.environ['KIVY_NO_CONSOLELOG'] = '1'
 Config.set('kivy', 'show_fps', 1)
 Config.set('graphics', 'fullscreen', 0)
 #Config.set('graphics', 'show_cursor', 0)
+Config.set('input', 'mouse', 'mouse,disable_multitouch')
+
 
 #Config.write()
 
@@ -100,8 +102,6 @@ class FPSCalculatorBetter(object):
         self.currentSum = 0
         self.totalResponse = 0
         return res
-
-
 
 
 
@@ -218,6 +218,20 @@ class StratGame(Widget):
     def tooglePlainView(self):
         self._fullScreen = not self._fullScreen
         self.calculateQuantaNSize()
+
+    def on_touch_down(self, touch):
+        if 'button' not in touch.profile: return
+        if touch.button != 'right': return
+        posX, posY = touch.pos
+        cellX, cellY = self.pos2id(posX, posY)
+
+        self.userSide.command_touch(Pos(cellX, cellY))
+
+    def on_touch_up(self, touch):
+        pass
+
+    def on_touch_move(self, touch):
+        pass
 
 
 

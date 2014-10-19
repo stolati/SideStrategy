@@ -74,13 +74,13 @@ class MouseBorderScroll(ScrollView):
 
     #pass the event to sub elements
     def on_touch_down(self, touch):
-        self.dispatch_children_transform('on_touch_down', touch)
+        return self.dispatch_children_transform('on_touch_down', touch)
 
     def on_touch_up(self, touch):
-        self.dispatch_children_transform('on_touch_up', touch)
+        return self.dispatch_children_transform('on_touch_up', touch)
 
     def on_touch_move(self, touch):
-        self.dispatch_children_transform('on_touch_move', touch)
+        return self.dispatch_children_transform('on_touch_move', touch)
 
     #TODO when updated, a dispatch_children is created
     def dispatch_children_transform(self, event, touch):
@@ -122,7 +122,11 @@ class MouseBorderScroll(ScrollView):
 
         self.move(deltaX, deltaY)
 
-    def on_mouse_pos(self, window, pos):
+    def on_mouse_pos(self, window, pos, *args):
+        if args: #sometimes I have exception, trying to catch that
+            args = tuple(window, pos) + args
+            print('!!!! on_mouse_pos : %s ' % repr(args))
+
         x, y = pos
         if not self.collide_point(x, y):
             # only return colliding events

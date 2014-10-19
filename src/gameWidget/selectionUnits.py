@@ -34,12 +34,13 @@ class UnitSelected(Button, Label):
         self._graphics = None
 
 
-
-
     def on_pos(self, *args): self._refresh()
     def on_size(self, *args): self._refresh()
 
     def _refresh(self):
+
+        if not hasattr(self._element.visual, 'fbo'):
+            return
 
         texture = self._element.visual.fbo.texture
 
