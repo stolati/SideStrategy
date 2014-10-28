@@ -1,6 +1,7 @@
 #:import MouseBorderScroll widget.mouseBorderScroll.MouseBorderScroll
 #:import Selection widget.selection.Selection
 #:import SelectionUnits gameWidget.selectionUnits.SelectionUnits
+#:import SelectionActions gameWidget.selectionActions.SelectionActions
 
 RelativeLayout:
     id: main_layout
@@ -23,11 +24,13 @@ RelativeLayout:
 
             StratGame:
                 id: strat_game
+                cur_action: show_actions.action
                 size_hint_y: None
                 size_hint_x: None
                 size: (1000, 1000)
                 pos_int: (0, 0)
                 on_unit_selection: show_units.change_selection(*args)
+                on_unit_selection: show_actions.change_selection(*args)
 
     Button:
         size_hint: (.1, .1)
@@ -43,4 +46,15 @@ RelativeLayout:
         padding: 0 
         spacing: 5
         sub_element_size_hint: (.5, .05)
+
+    SelectionActions:
+        id: show_actions
+        size_hint: (.1, .75)
+        pos_hint: {'x':.025, 'y':.2}
+        orientation: 'tb-rl'
+        padding: 0 
+        spacing: 5
+        sub_element_size_hint: (.5, .05)
+
+
 

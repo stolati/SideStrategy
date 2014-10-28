@@ -14,6 +14,10 @@ class Strategy(object):
         pass #by default do nothing
         print('action ?!')
 
+    def user_action(self, action, pos):
+        pass #by default do nothing
+        print('action %s on pos %s' % (action, pos))
+
     def advanceOneStepAndBounce(self, way, pos):
         """advance one step of x and return the x value
         which can change if the element bounce of the wall"""
@@ -60,10 +64,10 @@ class Strategy(object):
 
             for pos in curPos:
                 curWeight = foundPaths[pos][0]
-                for around in m.getAround(pos):
+                for around, distWeight in m.getAround(pos, True):
                     tmpWeight = fctWeight(around, m.get(around))
                     if tmpWeight is None: continue
-                    weight = tmpWeight + curWeight
+                    weight = (tmpWeight * distWeight) + curWeight
                     #replace case
                     if around not in foundPaths:
                         foundPaths[around] = (weight, [pos])

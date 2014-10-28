@@ -109,6 +109,7 @@ class FPSCalculatorBetter(object):
 class StratGame(Widget):
 
     unit_selection = ObjectProperty(None)
+    cur_action = ObjectProperty(None, allownone = True)
 
     def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
@@ -225,7 +226,7 @@ class StratGame(Widget):
         posX, posY = touch.pos
         cellX, cellY = self.pos2id(posX, posY)
 
-        self.userSide.command_touch(Pos(cellX, cellY))
+        self.userSide.action_to(self.cur_action, Pos(cellX, cellY))
 
     def on_touch_up(self, touch):
         pass

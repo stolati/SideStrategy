@@ -218,6 +218,9 @@ class Element(object):
     def selected(self):
         self.visual.selected = True
 
+    def user_action(self, action, pos):
+        self.current_strategy.user_action(action, pos)
+
 
 # From http://legacy.python.org/dev/peps/pep-0318/#examples
 def singleton(cls):

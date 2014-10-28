@@ -189,11 +189,18 @@ class StratMap(object):
         return 0 <= pos.x < self.size.x \
             and 0 <= pos.y < self.size.y
 
-    def getAround(self, pos):
+    def getAround(self, pos, withPonderation = False):
         """Return position around this one
         Begin the hexa part"""
+        if withPonderation:
+            res = []
+            for curPos, ponderation in self.mapTypeInst.getAround(pos, True):
+                if self.isValid(curPos):
+                    res.append((curPos, ponderation))
+            return res
 
-        return list(filter(self.isValid, self.mapTypeInst.getAround(pos)))
+        else:
+            return list(filter(self.isValid, self.mapTypeInst.getAround(pos)))
 
     def getRadius(self, pos, radius):
         """Return every elements from a radius

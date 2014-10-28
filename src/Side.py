@@ -125,9 +125,12 @@ class Side(object):
         return generatorFct
 
 
-    def command_touch(self, pos):
-
+    def action_to(self, action, pos):
         elem = self.game._map.get(pos)
+
+        for element in self._selectedElement:
+            element.user_action(action, pos)
+
 
         if elem.isFloor():
 
