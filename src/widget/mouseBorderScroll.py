@@ -66,6 +66,7 @@ class MouseBorderScroll(ScrollView):
 
         Window.bind(mouse_pos = self.on_mouse_pos)
         Window.bind(on_key_down = self.on_key_down)
+        Window.bind(on_key_up = self.on_key_up)
 
         # TODO the whole stuff http://kivy.org/docs/api-kivy.core.window.html# 
 
@@ -121,6 +122,10 @@ class MouseBorderScroll(ScrollView):
             self.move(+1, 0)
 
         self.move(deltaX, deltaY)
+
+    def on_key_up(self, keyboard, keycode, keycode2, text, modifier):
+        print('on_key_up')
+         
 
     def on_mouse_pos(self, window, pos, *args):
         if args: #sometimes I have exception, trying to catch that

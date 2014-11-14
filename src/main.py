@@ -26,25 +26,12 @@ import kivy
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
 # https://docs.python.org/3/reference/datamodel.html#object.__getitem__ => python special stuff
 
-# Things to do after :
-# - 
-# - 
-# - 
-# - 
-
-# Things to do after :
-
-# - click handle (left/right) with position
-# - link a strategy to the element
-
 # - bigger than 1x1 elements (so we can go to )
 # - an interface with mouse to pop elements
 
 # - we should avoid beiing to near the sky-floor limit for flyers and diggers
 
 # - put map type into there own class
-
-#:import SelectionUnits gameWidget.selectionUnits.SelectionUnits
 
 from gameWidget.selectionUnits import SelectionUnits
 

@@ -221,6 +221,9 @@ class Element(object):
     def user_action(self, action, pos):
         self.current_strategy.user_action(action, pos)
 
+    def getActions(self):
+        return self.current_strategy.getActions()
+
 
 # From http://legacy.python.org/dev/peps/pep-0318/#examples
 def singleton(cls):

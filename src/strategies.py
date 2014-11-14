@@ -14,6 +14,11 @@ class Strategy(object):
         pass #by default do nothing
         print('action ?!')
 
+
+    def getActions(self):
+        return ['move', 'attack']
+
+
     def user_action(self, action, pos):
         pass #by default do nothing
         print('action %s on pos %s' % (action, pos))
@@ -120,6 +125,7 @@ class DoNothingStrategy(Strategy):
     def action(self): pass
 
 
+
 class MotherShipStrategy(Strategy):
 
     def __init__(self, speed = 15, *args, **kargs):
@@ -146,6 +152,29 @@ class MotherShipStrategy(Strategy):
                     self.qteWalker += 1
 
             self.first = False
+
+    def getActions(self):
+        return ['pop runner', 'pop digger', 'pop flyer']
+
+    def user_action(self, action, pos):
+        if action == 'pop runner':
+            print('popping runner')
+            w = self.parent.side.createWalker(self.parent.pos)
+            w.user_action('move', pos)
+
+        elif action == 'pop digger':
+            print('popping digger')
+            d = self.parent.side.createDigger(self.parent.pos + Pos(0, -1))
+            d.user_action('move', pos)
+
+        elif action == 'pop flyer':
+            print('popping flyer')
+            f = self.parent.side.createFlyer(self.parent.pos + Pos(0, +1))
+            f.user_action('move', pos)
+
+        else:
+            print('mothership %s' % action)
+
 
 
 class RunOnFloorStrategy(Strategy):

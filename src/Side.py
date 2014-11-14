@@ -122,6 +122,7 @@ class Side(object):
                 speed = goalElem['speed'](),
             )
             self.game._map.elements.append(e)
+            return e
         return generatorFct
 
 

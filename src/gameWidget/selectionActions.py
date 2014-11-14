@@ -29,8 +29,7 @@ class SelectionActions(StackLayout):
 
         new_actions = set()
         for element in elements:
-            #for action in element.getActions():
-            for action in ['move', 'attack', 'createUnit']:
+            for action in element.getActions():
                 new_actions.add(action)
 
         self.clear_widgets()
