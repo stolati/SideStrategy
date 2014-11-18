@@ -15,23 +15,12 @@ Config.set('graphics', 'fullscreen', 0)
 #Config.set('graphics', 'show_cursor', 0)
 Config.set('input', 'mouse', 'mouse,disable_multitouch')
 
-
-#Config.write()
-
-
 import kivy
 
 #import cProfile
 
 # http://stackoverflow.com/questions/20625312/can-i-run-a-kivy-program-from-within-pyscripter
 # https://docs.python.org/3/reference/datamodel.html#object.__getitem__ => python special stuff
-
-# - bigger than 1x1 elements (so we can go to )
-# - an interface with mouse to pop elements
-
-# - we should avoid beiing to near the sky-floor limit for flyers and diggers
-
-# - put map type into there own class
 
 from gameWidget.selectionUnits import SelectionUnits
 
@@ -60,7 +49,7 @@ from mapType import *
 nb_element_on_screen = Pos(30, 30)
 
 
-class FPSCalculatorBetter(object):
+class FPSCalculator(object):
 
     def __init__(self, responseEverySeconds = 1):
         self.currentSum = 0
@@ -98,8 +87,15 @@ class StratGame(Widget):
     unit_selection = ObjectProperty(None)
     cur_action = ObjectProperty(None, allownone = True)
 
+    units_widget = ObjectProperty(None) #widget containing widgets
+
     def __init__(self, **kargs):
         super(StratGame, self).__init__(**kargs)
+
+        # size relative datas
+        self._quanta = Pos(1, 1)
+        self._parentSize = (1, 1)
+        self._fullScreen = False
 
         # map generation
         self.mapTypeInst = Squared()
@@ -108,6 +104,18 @@ class StratGame(Widget):
 
         self.cellx, self.celly = self._map.size
         self._graphics = None # violet rectangle in background
+
+        self.userSide = None
+        self.computerSide = None
+
+        Clock.schedule_once(self.start)
+
+    def start(self, dt):
+        self.putPlayers()
+        self.resetMap()
+        Clock.schedule_interval(self.update, 1.0/15.0)
+
+    def putPlayers(self):
 
         # create the map with 2 sides
         userSide = Side(color = named_colors.green, game = self)
@@ -119,13 +127,6 @@ class StratGame(Widget):
         self.userSide = userSide
         self.computerSide = computerSide
 
-        # size relative datas
-        self._quanta = Pos(1, 1)
-        self._parentSize = (1, 1)
-        self._fullScreen = False
-
-
-        Clock.schedule_interval(self.update, 1.0/15.0)
 
     def calculateQuantaNSize(self):
 
@@ -143,13 +144,15 @@ class StratGame(Widget):
 
         self.size = (sizeX, sizeY)
 
-        self.userSide.resetMap()
-
+    def resetMap(self):
+        if self.userSide:
+            self.userSide.resetMap()
 
     def on_resize(self, parent, size):
 
         self._parentSize = size
         self.calculateQuantaNSize() 
+        self.resetMap()
 
     def id2pos(self, x, y):
         """left 10 percent on each side"""
@@ -164,13 +167,13 @@ class StratGame(Widget):
         return self.mapTypeInst.pixel2pos(pos, quantumx, quantumy)
 
 
-    @FPSCalculatorBetter()
+    @FPSCalculator()
     def update(self, dt):
 
         sizeX, sizeY = self._quanta
 
         # (len(self.canvas.get_group(None)))
-        with self.canvas:
+        with self.canvas.before:
 
             if self._graphics is None:
                 named_colors.black()
@@ -179,10 +182,12 @@ class StratGame(Widget):
                 self._graphics.pos = (0, 0)
                 self._graphics.size = (self.width, self.height)
 
+        with self.canvas:
             self._map.updateElements(dt)
             self.userSide.updateMap(dt)
 
-    def selection(self, (xStart, yStart, xEnd, yEnd)):
+    def selection(self, selectionPos):
+        xStart, yStart, xEnd, yEnd  = selectionPos
 
         #TODO do the selection working again
         #TODO and set the selection class just as parent of this one
@@ -206,6 +211,7 @@ class StratGame(Widget):
     def tooglePlainView(self):
         self._fullScreen = not self._fullScreen
         self.calculateQuantaNSize()
+        self.resetMap()
 
     def on_touch_down(self, touch):
         if 'button' not in touch.profile: return

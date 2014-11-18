@@ -15,7 +15,7 @@ class ViewField(object):
 class ViewFieldAroundSimple(ViewField):
 
 	def getViewPos(self):
-		return self.parent.side._map.getRadius(self.parent.pos, self.radius)
+		return self.parent.side._map.getRadius(self.parent.pos_matrix, self.radius)
 
 
 
@@ -35,7 +35,7 @@ class ViewFieldGroundBlock(ViewField):
 		return False
 
 	def getViewPos(self):
-		for pos in self.parent.side._map.getRadius(self.parent.pos, self.radius):
+		for pos in self.parent.side._map.getRadius(self.parent.pos_matrix, self.radius):
 			if self.posIsVisible(pos, self.parent.playmap._map.get(pos)):
 				yield pos
 

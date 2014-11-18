@@ -164,9 +164,6 @@ class StratMap(object):
         #first draw the map so it will be first
         self.drawMap()
 
-        for e in self.elements:
-            e.draw(dt)
-
     def resetDraw(self):
         self.modifiedElements = []
         for pos, elem in self.everyElementLoop():
@@ -183,7 +180,7 @@ class StratMap(object):
 
     def findOnPos(self, pos, except_me = None):
         for e in self.elements:
-            if e is not except_me and e.pos == pos: yield e
+            if e is not except_me and e.pos_matrix == pos: yield e
 
     def isValid(self, pos):
         return 0 <= pos.x < self.size.x \

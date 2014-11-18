@@ -87,7 +87,7 @@ class Side(object):
 
         self._map.elements = list(ourElements)
         for notOurElement in notOurElements:
-            if notOurElement.pos in visiblePos:
+            if notOurElement.pos_matrix in visiblePos:
                 self._map.elements.append(notOurElement)
                 visibleElements.add(notOurElement)
 
@@ -121,7 +121,10 @@ class Side(object):
                 viewfield = goalElem['viewfield'](),
                 speed = goalElem['speed'](),
             )
+
+            self.game.units_widget.add_widget(e)
             self.game._map.elements.append(e)
+
             return e
         return generatorFct
 
@@ -161,7 +164,7 @@ class Side(object):
         element_selected = list()
         for e in self.game._map.elements:
             if e.side is not self: continue
-            if e.pos in positions:
+            if e.pos_matrix in positions:
                 element_selected.append(e)
                 e.selected()
 

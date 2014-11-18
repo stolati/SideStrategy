@@ -2,6 +2,7 @@
 #:import Selection widget.selection.Selection
 #:import SelectionUnits gameWidget.selectionUnits.SelectionUnits
 #:import SelectionActions gameWidget.selectionActions.SelectionActions
+#:import UnitsWidget unitsWidget.UnitsWidget
 
 RelativeLayout:
     id: main_layout
@@ -25,12 +26,16 @@ RelativeLayout:
             StratGame:
                 id: strat_game
                 cur_action: show_actions.action
+                units_widget: unit_widget
                 size_hint_y: None
                 size_hint_x: None
                 size: (1000, 1000)
                 pos_int: (0, 0)
                 on_unit_selection: show_units.change_selection(*args)
                 on_unit_selection: show_actions.change_selection(*args)
+
+                UnitsWidget:
+                    id: unit_widget
 
     Button:
         size_hint: (.1, .1)

@@ -28,7 +28,7 @@ class Strategy(object):
         which can change if the element bounce of the wall"""
 
         maxX = self.parent.playmap.cellx
-        pos = self.parent.pos + Pos(way, 0)
+        pos = self.parent.pos_matrix + Pos(way, 0)
         if pos.x >= maxX or pos.x < 0:
             way = -way
             pos = self.parent.pos + Pos(way, 0)
@@ -58,7 +58,7 @@ class Strategy(object):
         return pos
 
     def shortestPath(self, fctWeight, posTo, posFrom = None):
-        if posFrom is None: posFrom = self.parent.pos
+        if posFrom is None: posFrom = self.parent.pos_matrix
         if posFrom == posTo: return []
         m = self.parent.playmap._map
 
@@ -138,17 +138,17 @@ class MotherShipStrategy(Strategy):
 
     def action(self):
 
-        self.parent.pos = self.putOnFloor(self.parent.pos)
+        self.parent.pos_matrix = self.putOnFloor(self.parent.pos_matrix)
 
         for i in range(self.speed.moveStep()):
             #each 15 actions, pop a sibling
 
             if self.first:
-                self.parent.side.createDigger(self.parent.pos + Pos(0, -1)) 
-                self.parent.side.createFlyer(self.parent.pos + Pos(0, 1)) 
+                self.parent.side.createDigger(self.parent.pos_matrix + Pos(0, -1)) 
+                self.parent.side.createFlyer(self.parent.pos_matrix + Pos(0, 1)) 
             else :
                 if self.qteWalker < 1:
-                    self.parent.side.createWalker(self.parent.pos)
+                    self.parent.side.createWalker(self.parent.pos_matrix)
                     self.qteWalker += 1
 
             self.first = False
@@ -159,17 +159,17 @@ class MotherShipStrategy(Strategy):
     def user_action(self, action, pos):
         if action == 'pop runner':
             print('popping runner')
-            w = self.parent.side.createWalker(self.parent.pos)
+            w = self.parent.side.createWalker(self.parent.pos_matrix)
             w.user_action('move', pos)
 
         elif action == 'pop digger':
             print('popping digger')
-            d = self.parent.side.createDigger(self.parent.pos + Pos(0, -1))
+            d = self.parent.side.createDigger(self.parent.pos_matrix + Pos(0, -1))
             d.user_action('move', pos)
 
         elif action == 'pop flyer':
             print('popping flyer')
-            f = self.parent.side.createFlyer(self.parent.pos + Pos(0, +1))
+            f = self.parent.side.createFlyer(self.parent.pos_matrix + Pos(0, +1))
             f.user_action('move', pos)
 
         else:
@@ -199,10 +199,10 @@ class RunOnFloorStrategy(Strategy):
     def move(self):
         m = self.parent.playmap._map
 
-        nextPos = self.parent.pos + self.way
+        nextPos = self.parent.pos_matrix + self.way
         if not m.isValid(nextPos):
             self.way = -self.way # turn around
-            if not m.isValid(self.parent.pos + self.way):
+            if not m.isValid(self.parent.pos_matrix + self.way):
                 return
             return self.move()
 
@@ -210,18 +210,18 @@ class RunOnFloorStrategy(Strategy):
         nextElem = m.get(nextPos)
         if nextElem.isFloor():
             self.status = RunOnFloorStrategy._status_climbing
-            self.parent.pos = self.parent.pos + Pos.up
+            self.parent.pos_matrix = self.parent.pos_matrix + Pos.up
             return
 
         # special case of climbing end
-        climbingEnd = self.parent.pos + Pos.down + self.way
+        climbingEnd = self.parent.pos_matrix + Pos.down + self.way
         if m.get(climbingEnd).isFloor() and nextElem.isAir():
             self.status = RunOnFloorStrategy._status_walking
-            self.parent.pos = nextPos
+            self.parent.pos_matrix = nextPos
             return
 
 
-        underfootPos = self.parent.pos + Pos.down
+        underfootPos = self.parent.pos_matrix + Pos.down
         if not m.isValid(underfootPos):
             self.parent.deleteMe()
             return
@@ -231,21 +231,21 @@ class RunOnFloorStrategy(Strategy):
         # if we don't have floor, jump
         if underfootElem.isAir():
             self.status = RunOnFloorStrategy._status_jumping
-            self.parent.pos = underfootPos
+            self.parent.pos_matrix = underfootPos
             return
 
         assert underfootElem.isFloor()
 
         self.status = RunOnFloorStrategy._status_walking
-        self.parent.pos = nextPos
+        self.parent.pos_matrix = nextPos
 
 
     def action(self):
         for i in range(self.parent.speed.moveStep()):
             self.move()
 
-        pos = self.parent.pos
-        if self.parent.pos is None:
+        pos = self.parent.pos_matrix
+        if self.parent.pos_matrix is None:
             # in case of missing floor
             e.deleteMe()
             return
@@ -296,29 +296,29 @@ class DiggerDirectionStrategy(Strategy):
     def move(self):
         m = self.parent.playmap._map
 
-        if not m.get(self.parent.pos).isFloor():
-            floor = self.putOnFloor(self.parent.pos)
+        if not m.get(self.parent.pos_matrix).isFloor():
+            floor = self.putOnFloor(self.parent.pos_matrix)
             if floor is None: return
-            self.parent.pos = floor + Pos(0, -1)
+            self.parent.pos_matrix = floor + Pos(0, -1)
 
         if self.paths is None: self._fillPath()
 
-        m.get(self.parent.pos).setAsFloor(True)
+        m.get(self.parent.pos_matrix).setAsFloor(True)
 
         if not self.paths:
             self.parent.endStrategy()
             return
 
         nextOne = self.paths.pop(0)
-        if nextOne not in m.getAround(self.parent.pos):
+        if nextOne not in m.getAround(self.parent.pos_matrix):
             # special case, I don't want to deal that now
             self.parent.endStrategy()
             return
 
-        assert nextOne in m.getAround(self.parent.pos)
+        assert nextOne in m.getAround(self.parent.pos_matrix)
 
-        self.parent.pos = nextOne
-        if self.parent.pos == self.direction:
+        self.parent.pos_matrix = nextOne
+        if self.parent.pos_matrix == self.direction:
             self.parent.endStrategy()
 
     def action(self):
@@ -331,8 +331,8 @@ class DiggerFindDirectionStrategy(Strategy):
     def action(self):
         m = self.parent.playmap._map
 
-        if not m.get(self.parent.pos).isFloor():
-            self.parent.pos = self.putOnFloor(self.parent.pos) + Pos(0, -1)
+        if not m.get(self.parent.pos_matrix).isFloor():
+            self.parent.pos_matrix = self.putOnFloor(self.parent.pos_matrix) + Pos(0, -1)
 
         elements = list(m.findElement(lambda e: e.isFloor()))
         p, e = choice(elements)
@@ -368,15 +368,15 @@ class FlyerDirectionStrategy(Strategy):
             return
 
         nextOne = self.paths.pop(0)
-        if nextOne not in m.getAround(self.parent.pos):
+        if nextOne not in m.getAround(self.parent.pos_matrix):
             # special case, I don't want to deal that now
             self.parent.endStrategy()
             return
 
-        assert nextOne in m.getAround(self.parent.pos)
+        assert nextOne in m.getAround(self.parent.pos_matrix)
 
-        self.parent.pos = nextOne
-        if self.parent.pos == self.direction:
+        self.parent.pos_matrix = nextOne
+        if self.parent.pos_matrix == self.direction:
             self.parent.endStrategy()
 
     def action(self):
@@ -387,7 +387,7 @@ class FlyerDirectionStrategy(Strategy):
 class FlyerFindDirectionStrategy(Strategy):
 
     def action(self):
-        self.parent.side.createMissile(self.parent.pos + Pos(0, -1)) 
+        self.parent.side.createMissile(self.parent.pos_matrix + Pos(0, -1)) 
 
         m = self.parent.playmap._map
         elements = list(m.findElement(lambda e: e.isAir()))
@@ -405,7 +405,7 @@ class MissileStrategy(Strategy):
     def explode(self):
 
         m = self.parent.playmap._map
-        for pos in m.getRadius(self.parent.pos, 2):
+        for pos in m.getRadius(self.parent.pos_matrix, 2):
             m.get(pos).setAsAir()
 
             for e in m.findOnPos(pos, self.parent):
@@ -421,11 +421,11 @@ class MissileStrategy(Strategy):
     def move(self):
         m = self.parent.playmap._map
 
-        self.parent.pos += Pos(0, -1)
+        self.parent.pos_matrix += Pos(0, -1)
 
-        if not m.isValid(self.parent.pos):
+        if not m.isValid(self.parent.pos_matrix):
             self.parent.deleteMe()
-        elif m.get(self.parent.pos).isFloor():
+        elif m.get(self.parent.pos_matrix).isFloor():
             self.parent.deleteMe()
             self.explode()
 

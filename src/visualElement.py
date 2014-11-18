@@ -9,6 +9,8 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.graphics import *
 
+from kivy.properties import *
+
 from kivy.core.image import Image
 
 from strategies import *
@@ -19,6 +21,97 @@ from visualElement import *
 from random import choice
 
 cell_max_size = (255, 255)
+
+
+
+class Element(Widget):
+
+    pos_matrix = ObjectProperty(None)
+    visible = BooleanProperty(True)
+    selected = BooleanProperty(True)
+
+    def __init__(self, category, playmap, startPos, visual, strategy, side, viewfield, speed, **kargs):
+        super(Element, self).__init__(**kargs)
+
+        self.category = category
+        self.playmap = playmap
+        self.default_strategy = strategy
+        self.current_strategy = strategy
+        self.visual = visual
+        self.visual.parent = self
+        self.side = side
+        self.viewfield = viewfield
+        self.speed = speed
+        self.direction = Pos(0, 0)
+
+        self.viewfield.parent = self
+        self.current_strategy.parent = self
+
+        self.pos_matrix = startPos
+
+        self.bind(pos = self.redraw, size = self.redraw)
+
+        self.instructions = CanvasBase()
+        self.canvas.add(self.instructions)
+
+    def on_visible(self, self2, visible):
+        self.opacity = 1 if visible else 0
+
+    def redraw(self, *args):
+        with self.instructions:
+            self.draw(None)
+
+    def on_pos_matrix(self, self2, pos_matrix):
+        posX, posY, sizeX, sizeY = self.playmap.id2pos(*pos_matrix)
+        self.pos, self.size = (posX, posY), (sizeX, sizeY)
+
+    def remove(self):
+        if self.parent:
+            self.parent.remove(self)
+
+    def deleteMe(self):
+        #deleting from the map
+        try: #TODO do a better handling of deleting elements
+            self.playmap._map.elements.remove(self)
+            self.visual.remove()
+            self.side.remove(self)
+            self.remove()
+        except:
+            pass 
+
+    def setStrategy(self, strategy):
+        self.current_strategy = strategy
+        self.current_strategy.parent = self
+
+    def endStrategy(self):
+        self.current_strategy = self.default_strategy
+        self.current_strategy.parent = self
+
+    def tick(self):
+        previousPos = self.pos_matrix
+        self.current_strategy.action()
+
+        if self.pos_matrix is None: return
+
+        new_direction = Pos(self.pos_matrix.x - previousPos.x, self.pos_matrix.y - previousPos.y)
+        if new_direction.x != 0 or new_direction.y != 0:
+            self.direction = new_direction
+
+    def draw(self, dt):
+        self.visual.update(dt, direction = self.direction)
+
+    def unselected(self):
+        self.visual.selected = False
+
+    def selected(self):
+        self.visual.selected = True
+
+    def user_action(self, action, pos):
+        self.current_strategy.user_action(action, pos)
+
+    def getActions(self):
+        return self.current_strategy.getActions()
+
 
 
 class Visual(object):
@@ -40,7 +133,7 @@ class ColorVisual(Visual):
         self._graphicColor = None
 
     def _getSizeAndPos(self):
-        posX, posY, sizeX, sizeY = self.parent.playmap.id2pos(*self.parent.pos)
+        posX, posY, sizeX, sizeY = self.parent.playmap.id2pos(*self.parent.pos_matrix)
         return (Pos(sizeX, sizeY), Pos(posX, posY))
 
     def update(self, dt, **kargs):
@@ -166,63 +259,6 @@ class ColorWalker(ColorVisual):
 
 
 
-class Element(object):
-
-    def __init__(self, category, playmap, startPos, visual, strategy, side, viewfield, speed):
-
-        self.category = category
-        self.playmap, self.pos = playmap, startPos
-        self.default_strategy, self.current_strategy = strategy, strategy
-        self.visual = visual
-        self.visual.parent = self
-        self.side = side
-        self.viewfield = viewfield
-        self.speed = speed
-        self.direction = Pos(0, 0)
-
-        self.viewfield.parent = self
-        self.current_strategy.parent = self
-
-    def deleteMe(self):
-        #deleting from the map
-        try: #TODO do a better handling of deleting elements
-            self.playmap._map.elements.remove(self)
-            self.visual.remove()
-            self.side.remove(self)
-        except:
-            pass 
-
-    def setStrategy(self, strategy):
-        self.current_strategy = strategy
-        self.current_strategy.parent = self
-
-    def endStrategy(self):
-        self.current_strategy = self.default_strategy
-        self.current_strategy.parent = self
-
-    def tick(self):
-        previousPos = self.pos
-        self.current_strategy.action()
-        if self.pos is None:
-            return
-        new_direction = Pos(self.pos.x - previousPos.x, self.pos.y - previousPos.y)
-        if new_direction.x != 0 or new_direction.y != 0:
-            self.direction = new_direction
-
-    def draw(self, dt):
-        self.visual.update(dt, direction = self.direction)
-
-    def unselected(self):
-        self.visual.selected = False
-
-    def selected(self):
-        self.visual.selected = True
-
-    def user_action(self, action, pos):
-        self.current_strategy.user_action(action, pos)
-
-    def getActions(self):
-        return self.current_strategy.getActions()
 
 
 # From http://legacy.python.org/dev/peps/pep-0318/#examples

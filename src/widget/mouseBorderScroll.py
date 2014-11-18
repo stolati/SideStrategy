@@ -90,8 +90,7 @@ class MouseBorderScroll(ScrollView):
         for child in self.children[:]:
             if child.dispatch(event, touch):
                 return True
-        touch.pop
-
+        touch.pop()
 
 
     def move(self, deltaX, deltaY):
@@ -107,11 +106,11 @@ class MouseBorderScroll(ScrollView):
         if deltaX != 0 or deltaY != 0:
             self._update_effect_bounds()
 
+
     def on_key_down(self, keyboard, keycode, keycode2, text, modifier):
         print('on_key_down')
         deltaX, deltaY = 0, 0
-        print(keycode)
-        print(keycode2)
+
         if keycode2 == 72: # up
             self.move(0, +1)
         if keycode2 == 80: # down
@@ -123,7 +122,7 @@ class MouseBorderScroll(ScrollView):
 
         self.move(deltaX, deltaY)
 
-    def on_key_up(self, keyboard, keycode, keycode2, text, modifier):
+    def on_key_up(self, window, keycode, keycode2):
         print('on_key_up')
          
 
