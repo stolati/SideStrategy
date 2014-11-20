@@ -27,11 +27,11 @@ class UnitsWidget(Widget):
     def remove_widget(self, widget):
         super(UnitsWidget, self).remove_widget(widget)
 
-        widget.by_side[widget.side].remove(widget)
+        self.by_side[id(widget.side)].remove(widget)
 
 
     def get_side(self, side):
-        return widget.by_side.get(id(side), [])
+        return self.by_side.get(id(side), [])
 
     def get_other_than_side(self, side):
         for cur_side, elems in self.by_side.items():

@@ -64,10 +64,9 @@ class Side(object):
         #return
 
         # get elements from ourselves
-        ourElements, notOurElements = list(), list()
-        for e in self.game._map.elements:
-            if e.side == self: ourElements.append(e)
-            else: notOurElements.append(e)
+
+        ourElements = list(self.game.units_widget.get_side(self))
+        notOurElements = list(self.game.units_widget.get_other_than_side(self))
 
         visiblePos = set()
         visibleElements = set()
@@ -123,7 +122,6 @@ class Side(object):
             )
 
             self.game.units_widget.add_widget(e)
-            self.game._map.elements.append(e)
 
             return e
         return generatorFct
@@ -162,8 +160,7 @@ class Side(object):
         # TODO instead of having a list
         # give the max/min of each, the loop should be faster
         element_selected = list()
-        for e in self.game._map.elements:
-            if e.side is not self: continue
+        for elem in self.game.units_widget.get_side(self):
             if e.pos_matrix in positions:
                 element_selected.append(e)
                 e.selected()

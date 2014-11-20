@@ -80,7 +80,6 @@ class StratMap(object):
         self.playmap = playmap
         self.size = Pos(*size)
         self._map = [[MapElement(self, Pos(x, y)) for y in range(size[1])] for x in range(size[0])]
-        self.elements = []
         self.starts = [] # pos of starts
         self.mapTypeInst = mapTypeInst
 
@@ -157,7 +156,8 @@ class StratMap(object):
 
 
     def updateElements(self, dt):
-        for e in self.elements: e.tick()
+        for e in self.playmap.units_widget.children:
+            e.tick()
 
     def update(self, dt):
 
@@ -179,7 +179,7 @@ class StratMap(object):
         return res
 
     def findOnPos(self, pos, except_me = None):
-        for e in self.elements:
+        for e in self.playmap.units_widget.children:
             if e is not except_me and e.pos_matrix == pos: yield e
 
     def isValid(self, pos):

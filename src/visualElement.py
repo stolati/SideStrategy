@@ -26,7 +26,7 @@ cell_max_size = (255, 255)
 
 class Element(Widget):
 
-    pos_matrix = ObjectProperty(None)
+    pos_matrix = ObjectProperty(None, allownone = True)
     visible = BooleanProperty(True)
     selected = BooleanProperty(True)
 
@@ -62,22 +62,18 @@ class Element(Widget):
             self.draw(None)
 
     def on_pos_matrix(self, self2, pos_matrix):
+        if pos_matrix is None: return
         posX, posY, sizeX, sizeY = self.playmap.id2pos(*pos_matrix)
         self.pos, self.size = (posX, posY), (sizeX, sizeY)
 
     def remove(self):
-        if self.parent:
-            self.parent.remove(self)
+        self.parent.remove_widget(self)
 
     def deleteMe(self):
         #deleting from the map
-        try: #TODO do a better handling of deleting elements
-            self.playmap._map.elements.remove(self)
-            self.visual.remove()
-            self.side.remove(self)
-            self.remove()
-        except:
-            pass 
+        self.visual.remove()
+        #self.side.remove(self)
+        self.remove()
 
     def setStrategy(self, strategy):
         self.current_strategy = strategy
