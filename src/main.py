@@ -119,9 +119,11 @@ class StratGame(Widget):
 
         # create the map with 2 sides
         userSide = Side(color = named_colors.green, game = self)
+        userSide.name = 'user'
         userSide.createMotherShip(self._map.starts[0], speed = 3)
 
         computerSide = Side(color = named_colors.red, game = self)
+        computerSide.name = 'computer'
         computerSide.createMotherShip(self._map.starts[1])
 
         self.userSide = userSide

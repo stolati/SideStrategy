@@ -54,6 +54,7 @@ class Side(object):
         self.elements = {}
         self._map = game._map.duplicateWithFog()
 
+        self.name = '<no name>'
         self._lastVisibles = set()
         self._lastNotFog = set()
 
@@ -121,7 +122,9 @@ class Side(object):
                 speed = goalElem['speed'](),
             )
 
+            e.name = '%s.%s' % (self.name, goalName)
             self.game.units_widget.add_widget(e)
+            print('adding %s' % e.name)
 
             return e
         return generatorFct
@@ -155,15 +158,15 @@ class Side(object):
 
     def selection(self, positions):
         for e in self._selectedElement:
-            e.unselected()
+            e.selected = False
 
         # TODO instead of having a list
         # give the max/min of each, the loop should be faster
         element_selected = list()
         for elem in self.game.units_widget.get_side(self):
-            if e.pos_matrix in positions:
-                element_selected.append(e)
-                e.selected()
+            if elem.pos_matrix in positions:
+                element_selected.append(elem)
+                elem.selected = True
 
         self._selectedElement = element_selected
         return self._selectedElement

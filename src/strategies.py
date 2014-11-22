@@ -3,6 +3,7 @@ from random import random, randint, choice
 from pprint import pprint
 
 from utils import *
+from Exceptions import DeleteMe
 
 class Strategy(object):
     """Strategy interface class"""
@@ -223,8 +224,7 @@ class RunOnFloorStrategy(Strategy):
 
         underfootPos = self.parent.pos_matrix + Pos.down
         if not m.isValid(underfootPos):
-            self.parent.deleteMe()
-            return
+            raise DeleteMe()
 
         underfootElem = m.get(underfootPos)
 
@@ -247,8 +247,7 @@ class RunOnFloorStrategy(Strategy):
         pos = self.parent.pos_matrix
         if self.parent.pos_matrix is None:
             # in case of missing floor
-            e.deleteMe()
-            return
+            raise DeleteMe()
 
         curSide = self.parent.side
         for e in self.parent.playmap._map.findOnPos(pos, self.parent):
@@ -258,15 +257,16 @@ class RunOnFloorStrategy(Strategy):
             # TODO instead do a life count
             if e.category == 'walker':
                 # both are destroyed
-                self.parent.deleteMe()
                 e.deleteMe()
+                raise DeleteMe()
 
             if e.category == 'mothership':
-                self.parent.deleteMe()
 
                 e.current_strategy.life -= 1
                 if e.current_strategy.life == 0:
                     e.deleteMe()
+
+                raise DeleteMe()
 
         #if encounter another element
         #if encounter the mothership
@@ -424,10 +424,10 @@ class MissileStrategy(Strategy):
         self.parent.pos_matrix += Pos(0, -1)
 
         if not m.isValid(self.parent.pos_matrix):
-            self.parent.deleteMe()
-        elif m.get(self.parent.pos_matrix).isFloor():
-            self.parent.deleteMe()
+            raise DeleteMe()
+        if m.get(self.parent.pos_matrix).isFloor():
             self.explode()
+            raise DeleteMe()
 
 
     def action(self):

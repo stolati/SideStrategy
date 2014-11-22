@@ -19,9 +19,9 @@ from stratmap import *
 from visualElement import *
 
 from random import choice
+from Exceptions import DeleteMe
 
 cell_max_size = (255, 255)
-
 
 
 class Element(Widget):
@@ -44,6 +44,8 @@ class Element(Widget):
         self.speed = speed
         self.direction = Pos(0, 0)
 
+        self.name = '<no name>'
+
         self.viewfield.parent = self
         self.current_strategy.parent = self
 
@@ -51,29 +53,21 @@ class Element(Widget):
 
         self.bind(pos = self.redraw, size = self.redraw)
 
-        self.instructions = CanvasBase()
-        self.canvas.add(self.instructions)
-
     def on_visible(self, self2, visible):
         self.opacity = 1 if visible else 0
 
     def redraw(self, *args):
-        with self.instructions:
-            self.draw(None)
+        with self.canvas:
+            self.visual.update(None, direction = self.direction)
 
     def on_pos_matrix(self, self2, pos_matrix):
         if pos_matrix is None: return
         posX, posY, sizeX, sizeY = self.playmap.id2pos(*pos_matrix)
         self.pos, self.size = (posX, posY), (sizeX, sizeY)
 
-    def remove(self):
-        self.parent.remove_widget(self)
-
     def deleteMe(self):
-        #deleting from the map
         self.visual.remove()
-        #self.side.remove(self)
-        self.remove()
+        self.parent.remove_widget(self)
 
     def setStrategy(self, strategy):
         self.current_strategy = strategy
@@ -85,22 +79,17 @@ class Element(Widget):
 
     def tick(self):
         previousPos = self.pos_matrix
-        self.current_strategy.action()
+
+        try:
+            self.current_strategy.action()
+        except DeleteMe as rm:
+            self.deleteMe()
 
         if self.pos_matrix is None: return
 
         new_direction = Pos(self.pos_matrix.x - previousPos.x, self.pos_matrix.y - previousPos.y)
         if new_direction.x != 0 or new_direction.y != 0:
             self.direction = new_direction
-
-    def draw(self, dt):
-        self.visual.update(dt, direction = self.direction)
-
-    def unselected(self):
-        self.visual.selected = False
-
-    def selected(self):
-        self.visual.selected = True
 
     def user_action(self, action, pos):
         self.current_strategy.user_action(action, pos)

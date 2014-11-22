@@ -18,16 +18,24 @@ class UnitsWidget(Widget):
 
     def add_widget(self, widget, *args, **kargs):
         super(UnitsWidget, self).add_widget(widget, *args, **kargs)
+        print('adding widget %s' % widget.name)
 
         assert type(widget) == Element
 
-        side = id(self.by_side)
-        self.by_side[side] = self.by_side.get(side, []) + [widget]
+        side_id = id(widget.side)
+        side_set = self.by_side.get(side_id, set())
+        side_set.add(widget)
+        self.by_side[side_id] = side_set
 
     def remove_widget(self, widget):
         super(UnitsWidget, self).remove_widget(widget)
+        print('removing widget : ' + widget.name)
 
-        self.by_side[id(widget.side)].remove(widget)
+        side_id = id(widget.side)
+
+       	side_set = self.by_side[side_id]
+       	assert widget in side_set
+       	side_set.remove(widget) 
 
 
     def get_side(self, side):
@@ -37,5 +45,13 @@ class UnitsWidget(Widget):
         for cur_side, elems in self.by_side.items():
             if cur_side == id(side): continue
             for elem in elems: yield elem
+
+    def on_size(self, *args):
+    	print('!!!!!!!!!!')
+    	print('!!!!!!!!!!')
+    	print('!!!!!!!!!!')
+    	print('!!!!!!!!!!')
+    	print('!!!!!!!!!!')
+    	print('!!!!!!!!!!')
 
 #__EOF__
